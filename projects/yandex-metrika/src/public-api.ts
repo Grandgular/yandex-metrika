@@ -1,5 +1,3 @@
-/*
- * Public API Surface of yandex-metrika
- */
-
-export * from './lib/yandex-metrika';
+export * from './lib/ym-interfaces';
+export * from './lib/ym-provider';
+export * from './lib/ym-service';
