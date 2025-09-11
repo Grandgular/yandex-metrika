@@ -1,16 +1,12 @@
 export interface YMConfig {
-  id: number | string;
-  init: {
-    prodOnly: boolean;
-    defer: boolean;
-  };
-  tracking: {
+  id: number;
+  prodOnly: boolean;
+  loading: 'async' | 'defer' | 'sync';
+  options: {
     clickmap: boolean;
     trackLinks: boolean;
     accurateTrackBounce: boolean;
     trackHash: boolean;
-  };
-  features: {
     webvisor: boolean;
     ecommerce: boolean | string;
     triggerEvent: boolean;

@@ -24,7 +24,7 @@ export function provideYandexMetrika(userConfig: YMConfigOptional): EnvironmentP
       const isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
       const metrika = inject(YMService);
       const config = inject(YM_CONFIG_TOKEN);
-      const shouldInitialize = isBrowser && (!config.init?.prodOnly || !isDevMode());
+      const shouldInitialize = isBrowser && (!config?.prodOnly || !isDevMode());
 
       if (shouldInitialize) metrika.initialize(config);
 
@@ -35,18 +35,11 @@ export function provideYandexMetrika(userConfig: YMConfigOptional): EnvironmentP
 
 function mergeYMConfig(userConfig: YMConfigOptional): YMConfig {
   return {
+    ...defaultYMConfig,
     ...userConfig,
-    init: {
-      ...defaultYMConfig.init,
-      ...userConfig.init,
-    },
-    tracking: {
-      ...defaultYMConfig.tracking,
-      ...userConfig.tracking,
-    },
-    features: {
-      ...defaultYMConfig.features,
-      ...userConfig.features,
+    options: {
+      ...defaultYMConfig.options,
+      ...userConfig.options,
     },
   };
 }
