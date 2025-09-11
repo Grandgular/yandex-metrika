@@ -18,5 +18,5 @@ export type DeepPartial<T> = {
 };
 
 export type YMConfigOptional = {
-  id: number | string;
+  id: number;
 } & DeepPartial<Omit<YMConfig, 'id'>>;
