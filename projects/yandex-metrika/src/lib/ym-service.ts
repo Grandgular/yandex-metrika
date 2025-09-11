@@ -33,7 +33,7 @@ export class YMService {
     script.async = config.loading === 'async';
     script.defer = config.loading === 'defer';
 
-    window.ym(config.id, 'init', config.options);
+    (window as any).ym(config.id, 'init', config.options);
 
     script.onload = () => console.log('YM script loaded');
     script.onerror = (error) => console.error('YM script failed:', error);

@@ -4,12 +4,13 @@ export const defaultYMConfig: Omit<YMConfig, 'id'> = {
   prodOnly: false,
   loading: 'async',
   options: {
+    ecommerce: 'dataLayer',
     clickmap: true,
     trackLinks: true,
     accurateTrackBounce: true,
     trackHash: false,
     webvisor: false,
-    ecommerce: false,
     triggerEvent: false,
+    // ssr: false,
   },
 };

@@ -10,6 +10,7 @@ export interface YMConfig {
     webvisor: boolean;
     ecommerce: boolean | string;
     triggerEvent: boolean;
+    // ssr: boolean;
   };
 }
 
