@@ -1,7 +1,7 @@
 import { Injectable, PLATFORM_ID, inject, isDevMode, DOCUMENT } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { YM_CONFIG_TOKEN } from './ym-config-token';
-import { YMConfig } from './ym-interfaces';
+import { YMConfig } from './interfaces/ym-config-interfaces';
 
 @Injectable({ providedIn: 'root' })
 export class YMInitService {

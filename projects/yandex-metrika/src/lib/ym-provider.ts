@@ -6,11 +6,12 @@ import {
   PLATFORM_ID,
   provideAppInitializer,
 } from '@angular/core';
-import { YMConfig, YMConfigOptional } from './ym-interfaces';
 import { YM_CONFIG_TOKEN } from './ym-config-token';
 import { YMInitService } from './ym-init-service';
 import { isPlatformBrowser } from '@angular/common';
 import { defaultYMConfig } from './ym-config-default';
+import { YMConfigOptional } from './interfaces/ym-config-optional-interfaces';
+import { YMConfig } from './interfaces/ym-config-interfaces';
 
 export function provideYandexMetrika(userConfig: YMConfigOptional): EnvironmentProviders {
   const mergedConfig = mergeYMConfig(userConfig);

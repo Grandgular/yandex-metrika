@@ -1,4 +1,4 @@
-import { YMConfig } from './ym-interfaces';
+import { YMConfig } from './interfaces/ym-config-interfaces';
 
 export const defaultYMConfig: Omit<YMConfig, 'id'> = {
   prodOnly: false,

@@ -8,5 +8,27 @@
   "dependencies": {
     "tslib": "^2.3.0"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "description": "Angular service for Yandex Metrika integration with SSR support, TypeScript typings and flexible configuration",
+  "author": "Grandgular <https://t.me/grandgular>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/grandgular/yandex-metrika.git"
+  },
+  "homepage": "https://github.com/grandgular/yandex-metrika#readme",
+  "keywords": [
+    "angular",
+    "yandex",
+    "metrika",
+    "analytics",
+    "metrics",
+    "tracking",
+    "ssr",
+    "universal",
+    "typescript",
+    "rxjs",
+    "service",
+    "integration"
+  ]
 }
