@@ -6,13 +6,13 @@ import {
   PLATFORM_ID,
   provideAppInitializer,
 } from '@angular/core';
-import { YMConfig } from './ym-interfaces';
+import { YMConfig, YMConfigOptional } from './ym-interfaces';
 import { YM_CONFIG_TOKEN } from './ym-config-token';
 import { YMService } from './ym-service';
 import { isPlatformBrowser } from '@angular/common';
 import { defaultYMConfig } from './ym-config-default';
 
-export function provideYandexMetrika(userConfig: YMConfig): EnvironmentProviders {
+export function provideYandexMetrika(userConfig: YMConfigOptional): EnvironmentProviders {
   const mergedConfig = mergeYMConfig(userConfig);
 
   return makeEnvironmentProviders([
@@ -33,7 +33,7 @@ export function provideYandexMetrika(userConfig: YMConfig): EnvironmentProviders
   ]);
 }
 
-function mergeYMConfig(userConfig: YMConfig): YMConfig {
+function mergeYMConfig(userConfig: YMConfigOptional): YMConfig {
   return {
     ...userConfig,
     init: {

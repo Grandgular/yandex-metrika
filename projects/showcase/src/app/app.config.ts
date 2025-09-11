@@ -18,7 +18,11 @@ export const appConfig: ApplicationConfig = {
     provideClientHydration(withEventReplay()),
     provideHttpClient(withFetch()),
     provideYandexMetrika({
-      id: 11111111111111,
+      id: 103632150,
+      features: {
+        webvisor: true,
+        ecommerce: 'dataLayer',
+      },
     }),
   ],
 };

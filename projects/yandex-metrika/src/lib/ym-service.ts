@@ -7,7 +7,6 @@ import { YMConfig } from './ym-interfaces';
 export class YMService {
   readonly #isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   readonly #config = inject(YM_CONFIG_TOKEN, { optional: true });
-  readonly #metrika: any = null;
 
   public initialize(config: YMConfig): void {
     this.loadScript(config);
@@ -24,6 +23,18 @@ export class YMService {
   }
 
   private loadScript(config: YMConfig): void {
-    console.log('loadScript');
+    const script = document.createElement('script');
+    script.src = 'https://mc.yandex.ru/metrika/tag.js';
+    script.async = true;
+
+    script.onload = () => {
+      (window as any).ym(config.id, 'init', { ...config.tracking, ...config.features });
+    };
+
+    script.onerror = () => {
+      console.error('Failed to load Yandex Metrika script');
+    };
+
+    document.head.appendChild(script);
   }
 }
