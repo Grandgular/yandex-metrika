@@ -1,12 +1,15 @@
 {
   "name": "@grandgular/yandex-metrika",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "peerDependencies": {
     "@angular/common": "^20.2.0",
     "@angular/core": "^20.2.0"
   },
   "dependencies": {
     "tslib": "^2.3.0"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "sideEffects": false,
   "description": "Angular service for Yandex Metrika integration with SSR support, TypeScript typings and flexible configuration",

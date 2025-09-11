@@ -61,10 +61,10 @@ import { YMService } from '@grandgular/yandex-metrika';
   // ...
 })
 export class MyComponent {
-  metirca = inject(YMService);
+  metrica = inject(YMService);
 
   onSignUp() {
-    this.metirca.ym('reachGoal', 'signup', { plan: 'premium', source: 'google' });
+    this.metrica.ym('reachGoal', 'signup', { plan: 'premium', source: 'google' });
   }
 }
 ```
