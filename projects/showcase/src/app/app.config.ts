@@ -4,11 +4,10 @@ import {
   provideZonelessChangeDetection,
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
-
-import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
-import { provideYandexMetrika } from '@grandgular/yandex-metrika';
 import { provideHttpClient, withFetch } from '@angular/common/http';
+import { routes } from './app.routes';
+import { provideYandexMetrika } from '@grandgular/yandex-metrika';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -20,6 +19,9 @@ export const appConfig: ApplicationConfig = {
     provideYandexMetrika({
       id: 104120889,
       options: {
+        clickmap: true,
+        trackLinks: true,
+        accurateTrackBounce: true,
         webvisor: true,
         ecommerce: 'dataLayer',
       },

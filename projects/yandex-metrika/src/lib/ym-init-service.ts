@@ -1,22 +1,22 @@
 import { Injectable, PLATFORM_ID, inject, isDevMode, DOCUMENT } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { YM_CONFIG_TOKEN } from './ym-config-token';
-import { YMConfig } from './interfaces/ym-config-interfaces';
+import { YMConfig } from './ym-config-interface';
 
 @Injectable({ providedIn: 'root' })
 export class YMInitService {
   readonly #document = inject(DOCUMENT);
-  readonly #config = inject(YM_CONFIG_TOKEN, { optional: true });
   readonly #isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   readonly #scriptSrc = 'https://mc.yandex.ru/metrika/tag.js';
 
   public initialize(config: YMConfig): void {
+    if (!this.canInit(config)) return;
+
     this.loadScript(config);
     this.addNoscriptFallback(config.id);
   }
 
-  public isEnabled(): boolean {
-    return this.#isBrowser && !!this.#config && (!this.#config?.prodOnly || !isDevMode());
+  private canInit(config: YMConfig): boolean {
+    return this.#isBrowser && !!config && !!config.id && (!config?.prodOnly || !isDevMode());
   }
 
   private loadScript(config: YMConfig): void {
