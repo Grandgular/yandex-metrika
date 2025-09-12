@@ -1,12 +1,13 @@
-import { Injectable, PLATFORM_ID, inject, isDevMode, DOCUMENT } from '@angular/core';
+import { DOCUMENT, inject, Injectable, isDevMode, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { YMConfig } from './ym-config-interface';
+import { libName } from './ym-lib-name';
 
 @Injectable({ providedIn: 'root' })
 export class YMInitService {
   readonly #document = inject(DOCUMENT);
   readonly #isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
-  readonly #scriptSrc = 'https://mc.yandex.ru/metrika/tag.js';
+  readonly #defaultScriptUrl = 'https://mc.yandex.ru/metrika/tag.js';
 
   public initialize(config: YMConfig): void {
     if (!this.canInit(config)) return;
@@ -23,15 +24,16 @@ export class YMInitService {
     this.initializeYMQueue();
 
     const script = this.#document.createElement('script');
-
-    script.src = this.#scriptSrc;
+    script.src = config?.alternativeScriptUrl || this.#defaultScriptUrl;
     script.async = config.loading === 'async';
     script.defer = config.loading === 'defer';
 
     (window as any).ym(config.id, 'init', config.options);
 
-    script.onload = () => console.log('YM script loaded');
-    script.onerror = (error) => console.error('YM script failed:', error);
+    script.onload = () =>
+      console.log(`${libName}: Скрипт для счетчика ${config.id} успешно загружен`);
+    script.onerror = (error) =>
+      console.error(`${libName}: Не удалось загрузить скрипт для счетчика ${config.id}: `, error);
 
     this.#document.head.appendChild(script);
   }

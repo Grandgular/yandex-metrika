@@ -1,178 +1,179 @@
 import { Injectable, PLATFORM_ID, inject, isDevMode } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { YM_CONFIG_TOKEN } from './ym-config-token';
+import { YM_CONFIG_TOKEN, YM_DEFAULT_CONFIG_TOKEN } from './ym-config-token';
+import { YMConfig } from './ym-config-interface';
+import { libName } from './ym-lib-name';
 
 /**
- * Main service for interacting with Yandex Metrika API in Angular applications.
+ * Основной сервис для работы с API Яндекс.Метрики в Angular приложениях.
  *
- * Provides a type-safe wrapper around the global `ym` function with automatic
- * configuration handling, error protection, and environment checks.
+ * Предоставляет типобезопасную обертку над глобальной функцией `ym` с автоматической обработкой конфигурации,
+ * проверкой окружения и обработкой ошибок. Поддерживает работу с одним или несколькими счетчиками.
  *
  * @example
- * // Inject and use in components
- * constructor(private ym: YMService) {}
+ * // Использование в компонентах
+ * metrika = inject(YMService)
  *
  * trackEvent() {
- *   this.ym('reachGoal', 'purchase', { amount: 100 });
+ *   this.metrika.ym('reachGoal', 'покупка', { сумма: 1000 });
  * }
  *
  * @remarks
- * - Automatically handles configuration injection
- * - Performs environment checks (browser, production mode)
- * - Provides error handling and warnings
- * - Supports both explicit and implicit counter ID usage
+ * - Автоматически обрабатывает внедрение конфигурации
+ * - Выполняет проверки окружения (браузер, production режим)
+ * - Обеспечивает обработку ошибок и предупреждения
+ * - Поддерживает явное и неявное указание ID счетчика
+ * - Работает с несколькими счетчиками через ID или имя
  *
- * @see YMConfig - For configuration options
- * @see provideYandexMetrika - For provider setup
+ * @see YMConfig - Для опций конфигурации
+ * @see provideYandexMetrika - Для настройки провайдеров
  */
 @Injectable({ providedIn: 'root' })
 export class YMService {
-  readonly #config = inject(YM_CONFIG_TOKEN, { optional: true });
+  readonly #configs = inject(YM_CONFIG_TOKEN, { optional: true });
+  readonly #defaultConfig = inject(YM_DEFAULT_CONFIG_TOKEN, { optional: true });
   readonly #isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   /**
-   * Universal method for calling any Yandex Metrika API function.
-   *
-   * Automatically handles counter ID injection and provides error protection.
-   * Can be used with or without explicit counter ID parameter.
-   *
-   * @param args - Arguments to pass to the Yandex Metrika API.
-   * If the first argument is a number or string, it's treated as an explicit counter ID.
-   * Otherwise, the configured counter ID will be automatically prepended.
+   * Универсальный метод для вызова любого метода API Яндекс.Метрики.
+   * Поддерживает работу с несколькими счетчиками через ID или имя.
    *
    * @example
-   * // Using configured ID automatically
-   * ym('reachGoal', 'signup', { plan: 'premium' });
+   * // Использование счетчика по умолчанию
+   * ym('hit', '/главная');
+   * ym('reachGoal', 'регистрация', { план: 'премиум' });
    *
    * @example
-   * // Using explicit counter ID
-   * ym(123456, 'hit', '/homepage');
+   * // Использование счетчика по ID
+   * ym(123456, 'hit', '/страница');
+   * ym(123456, 'ecommerce.addProduct', данныеТовара);
    *
    * @example
-   * // E-commerce methods
-   * ym('ecommerce.addProduct', { id: 'prod1', name: 'Product', price: 100 });
+   * // Использование счетчика по имени
+   * ym('аналитика', 'params', { userId: '123' });
+   * ym('бэкап', 'userParams', данныеПользователя);
    *
-   * @throws Logs warnings and errors to console but doesn't throw exceptions
+   * @param args - Аргументы для передачи в API Яндекс.Метрики.
+   * Если первый аргумент number - воспринимается как ID счетчика
+   * Если первый аргумент string и совпадает с именем счетчика - воспринимается как имя счетчика
+   * В остальных случаях используется счетчик по умолчанию
    *
-   * @see https://yandex.com/support/metrica/js-api.html - For complete API reference
+   * @throws Выводит предупреждения и ошибки в консоль, но не выбрасывает исключения
+   *
+   * @remarks
+   * - Автоматически проверяет доступность счетчиков и конфигурацию
+   * - Выполняет валидацию аргументов метода (наличие и типы)
+   * - Обрабатывает как одиночные, так и множественные конфигурации счетчиков
+   * - Предоставляет детальные сообщения об ошибках для отладки
+   *
+   * @see https://yandex.com/support/metrica/js-api - Полная документация API Яндекс.Метрики
    */
+  public ym(counterIdOrName: number | string, ...args: unknown[]): void;
+  public ym(...args: unknown[]): void;
+
   public ym(...args: unknown[]): void {
-    if (!this.canExecute()) return;
+    if (args.length === 0) {
+      console.warn(`${libName}: Не предоставлены аргументы`);
+      return;
+    }
 
     const firstArg = args[0];
     const isFirstArgId = typeof firstArg === 'number';
+    const isFirstArgName = typeof firstArg === 'string' && this.isCounterName(firstArg);
 
-    if (isFirstArgId && args.length < 2) {
-      console.warn('@grandgular/yandex-metrika: Missing method name when ID provided');
+    let counterIdentifier: string | number | undefined;
+    let methodArgs: unknown[];
+    let targetCounterId: number | undefined;
+
+    if (isFirstArgId) {
+      counterIdentifier = firstArg;
+      methodArgs = args.slice(1);
+      targetCounterId = firstArg;
+    } else if (isFirstArgName) {
+      counterIdentifier = firstArg;
+      methodArgs = args.slice(1);
+      targetCounterId = this.getCounterIdByName(firstArg);
+    } else {
+      methodArgs = args;
+      targetCounterId = this.#defaultConfig?.id;
+    }
+
+    if (!this.canExecute(counterIdentifier)) return;
+
+    if (!targetCounterId) {
+      console.warn(`${libName}: Не найден действительный ID счетчика`);
       return;
     }
 
-    if (!isFirstArgId && args.length < 1) {
-      console.warn('@grandgular/yandex-metrika: Missing method name');
+    if (methodArgs.length === 0) {
+      console.warn(`${libName}: Отсутствует название метода`);
       return;
     }
 
-    const finalArgs = isFirstArgId ? args : [this.#config!.id, ...args];
+    const methodName = methodArgs[0];
+
+    if (typeof methodName !== 'string') {
+      console.warn(`${libName}: Название метода должно быть строкой`);
+      return;
+    }
 
     try {
-      (window as any).ym(...finalArgs);
+      (window as any).ym(targetCounterId, ...methodArgs);
     } catch (error) {
-      console.error('@grandgular/yandex-metrika: Method call failed:', error);
+      console.error(`${libName}: Ошибка вызова метода: `, error, {
+        counterId: targetCounterId,
+        methodArgs,
+      });
     }
   }
 
-  private canExecute(): boolean {
-    return (
-      this.#isBrowser &&
-      !!this.#config &&
-      !!this.#config.id &&
-      (!this.#config?.prodOnly || !isDevMode()) &&
-      typeof (window as any).ym === 'function'
-    );
+  private isCounterName(name: string): boolean {
+    return this.#configs?.some((config) => config.name === name) ?? false;
   }
 
-  // public reachGoal(
-  //   goalName: string,
-  //   params?: Record<string, any>,
-  //   callback?: () => void,
-  //   ctx?: any,
-  // ): void {
-  //   if (!this.canExecute()) return;
-  //
-  //   (window as any).ym(this.#config!.id, 'reachGoal', goalName, params, callback, ctx);
-  // }
-  //
-  // public hit(url: string, title?: string, referer?: string): void {
-  //   if (!this.canExecute()) return;
-  //
-  //   const options: any = {};
-  //   if (title) options.title = title;
-  //   if (referer) options.referer = referer;
-  //
-  //   (window as any).ym(this.#config!.id, 'hit', url, options);
-  // }
-  //
-  // public params(params: Record<string, any>, callback?: () => void, ctx?: any): void {
-  //   if (!this.canExecute()) return;
-  //
-  //   (window as any).ym(this.#config!.id, 'params', params, callback, ctx);
-  // }
-  //
-  // public userParams(params: Record<string, any>): void {
-  //   if (!this.canExecute()) return;
-  //
-  //   (window as any).ym(this.#config!.id, 'userParams', params);
-  // }
-  //
-  // public file(url: string, callback?: () => void, ctx?: any): void {
-  //   if (!this.canExecute()) return;
-  //
-  //   (window as any).ym(this.#config!.id, 'file', url, callback, ctx);
-  // }
-  //
-  // public extLink(url: string, callback?: () => void, ctx?: any): void {
-  //   if (!this.canExecute()) return;
-  //
-  //   (window as any).ym(this.#config!.id, 'extLink', url, callback, ctx);
-  // }
-  //
-  // public notBounce(callback?: () => void, ctx?: any): void {
-  //   if (!this.canExecute()) return;
-  //
-  //   (window as any).ym(this.#config!.id, 'notBounce', callback, ctx);
-  // }
-  //
-  // public setUserID(userId: string | number): void {
-  //   if (!this.canExecute()) return;
-  //
-  //   (window as any).ym(this.#config!.id, 'setUserID', userId);
-  // }
-  //
-  // public getClientID(callback: (clientID: string) => void): void {
-  //   if (!this.canExecute()) return;
-  //
-  //   (window as any).ym(this.#config!.id, 'getClientID', callback);
-  // }
-  //
-  // public addFileExtension(extensions: string | string[]): void {
-  //   if (!this.canExecute()) return;
-  //
-  //   (window as any).ym(this.#config!.id, 'addFileExtension', extensions);
-  // }
-  //
-  // public ecommerceAddProduct(product: any): void {
-  //   if (!this.canExecute()) return;
-  //
-  //   (window as any).ym(this.#config!.id, 'ecommerce.addProduct', product);
-  // }
-  //
-  // public ecommercePurchase(order: any): void {
-  //   if (!this.canExecute()) return;
-  //
-  //   (window as any).ym(this.#config!.id, 'ecommerce.purchase', order);
-  // }
-  //
-  // public getCounterId(): number | null {
-  //   return this.#config?.id || null;
-  // }
+  private getCounterIdByName(name: string): number | undefined {
+    return this.#configs?.find((config) => config.name === name)?.id;
+  }
+
+  private canExecute(counterIdOrName?: string | number): boolean {
+    if (!this.#isBrowser || typeof (window as any).ym !== 'function') return false;
+
+    if (!this.#configs || this.#configs.length === 0) {
+      console.warn(`${libName}: Не настроены счетчики`);
+      return false;
+    }
+
+    if (counterIdOrName !== undefined) {
+      const config = this.getCounterConfig(counterIdOrName);
+
+      if (!config) {
+        const availableCounters = this.#configs
+          .map((c) => (c.name ? `${c.name} (${c.id})` : c.id.toString()))
+          .join(', ');
+        console.warn(
+          `${libName}: Счетчик "${counterIdOrName}" не найден. Доступные: ${availableCounters}`,
+        );
+        return false;
+      }
+
+      return !!config.id && (!config.prodOnly || !isDevMode());
+    }
+
+    if (!this.#defaultConfig) {
+      console.warn(`${libName}: Не настроен счетчик по умолчанию`);
+      return false;
+    }
+
+    return !!this.#defaultConfig.id && (!this.#defaultConfig.prodOnly || !isDevMode());
+  }
+
+  private getCounterConfig(counterIdOrName: string | number): YMConfig | undefined {
+    if (!this.#configs) return undefined;
+
+    if (typeof counterIdOrName === 'number') {
+      return this.#configs.find((config) => config.id === counterIdOrName);
+    } else {
+      return this.#configs.find((config) => config.name === counterIdOrName);
+    }
+  }
 }

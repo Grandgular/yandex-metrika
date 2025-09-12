@@ -1,35 +1,38 @@
 <img src="https://raw.githubusercontent.com/Grandgular/rx/refs/heads/main/projects/showcase/public/favicon.svg" width="220px" alt="Grandgular Logo">
 
 # @grandgular/yandex-metrika
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Telegram](https://img.shields.io/badge/Grandgular_Channel-2CA5E0?style=flat&logo=telegram)](https://t.me/grandgular)
-[![LinkedIn](https://img.shields.io/badge/Andrei_Shpileuski-0077B5?style=flat&logo=linkedin)](https://linkedin.com/in/andrei-shpileuski)
 
-### Angular service for easy Yandex Metrika integration with SSR support, TypeScript typings and flexible configuration.
+[![Лицензия: MIT](https://img.shields.io/badge/Лицензия-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Telegram](https://img.shields.io/badge/Канал_Grandgular-2CA5E0?style=flat&logo=telegram)](https://t.me/grandgular)
+[![LinkedIn](https://img.shields.io/badge/Андрей_Шпилевский-0077B5?style=flat&logo=linkedin)](https://linkedin.com/in/andrei-shpileuski)
 
-## Features
-✅ Angular 16+ compatible  
-✅ SSR support (no initialization on server-side)  
-✅ TypeScript full type safety  
-✅ Flexible configuration with optional properties  
-✅ Multiple loading strategies (async, defer, sync)  
-✅ Environment aware (prodOnly mode)  
-✅ NoScript fallback for users with disabled JavaScript  
-✅ Easy to use provider pattern
+### Angular сервис для простой интеграции Яндекс.Метрики с поддержкой SSR, TypeScript типами и гибкой конфигурацией.
+
+## Возможности
+
+✅ Совместимость с Angular v19.0.0+  
+✅ Поддержка SSR (без инициализации на серверной стороне)  
+✅ Полная TypeScript типобезопасность  
+✅ Гибкая конфигурация с опциональными свойствами  
+✅ Несколько стратегий загрузки скрипта (async, defer, sync)  
+✅ Поддержка нескольких счетчиков  
+✅ Окружение-зависимая инициализация (режим prodOnly)  
+✅ NoScript фолбэк для пользователей с отключенным JavaScript  
+✅ Простой паттерн провайдеров
 
 ---
 
-## Installation
+## Установка
 
-```
+```bash
 npm install @grandgular/yandex-metrika
 ```
 
 ---
 
-## Quick Start
+## Быстрый старт
 
-### Import in your app configuration:
+### Импорт в конфигурации приложения:
 
 ```typescript
 // app.config.ts
@@ -38,21 +41,21 @@ import { provideYandexMetrika } from '@grandgular/yandex-metrika';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideYandexMetrika({
-      id: 104120889,
-      prodOnly: true,
-      loading: 'async',
+      id: 104120889, // Обязательный: ID вашего счетчика
+      prodOnly: true, // Опционально: инициализировать только в продакшене
+      loading: 'async', // Опционально: стратегия загрузки
       options: {
-        webvisor: true,
-        ecommerce: 'dataLayer',
-        clickmap: true,
-        // etc.
+        webvisor: true, // Включить вебвизор
+        ecommerce: 'dataLayer', // E-commerce трекинг
+        clickmap: true, // Карта кликов
+        // и т.д.
       },
     }),
   ],
 };
 ```
 
-### Use in your components:
+### Использование в компонентах:
 
 ```typescript
 import { YMService } from '@grandgular/yandex-metrika';
@@ -64,64 +67,88 @@ export class MyComponent {
   metrica = inject(YMService);
 
   onSignUp() {
-    this.metrica.ym('reachGoal', 'signup', { plan: 'premium', source: 'google' });
+    this.metrica.ym('reachGoal', 'регистрация', {
+      план: 'премиум',
+      источник: 'google',
+    });
   }
 }
 ```
 
 ---
 
-## Configuration Options
+## Опции конфигурации
 
-| Property                      | Optional/Required | Type                           | Default   | Description                                         |
-| ----------------------------- | ----------------- | ------------------------------ | --------- | --------------------------------------------------- |
-| `id`                          | `Required`        | `number`                       | -         | Your Yandex Metrika counter ID                      |
-| `prodOnly`                    | `Optional`        | `boolean`                      | `false`   | Initialize only in production mode                  |
-| `loading`                     | `Optional`        | `'async' \| 'defer' \| 'sync'` | `'async'` | Script loading strategy                             |
-| `options.clickmap`            | `Optional`        | `boolean`                      | `false`   | Enable click tracking and heatmap                   |
-| `options.trackLinks`          | `Optional`        | `boolean`                      | `false`   | Enable outbound link tracking                       |
-| `options.accurateTrackBounce` | `Optional`        | `boolean`                      | `false`   | Accurate bounce rate calculation                    |
-| `options.trackHash`           | `Optional`        | `boolean`                      | `false`   | Track URL hash changes                              |
-| `options.webvisor`            | `Optional`        | `boolean`                      | `false`   | Enable session replay and analytics                 |
-| `options.ecommerce`           | `Optional`        | `boolean \| string`            | `false`   | E-commerce tracking (true or custom dataLayer name) |
-| `options.triggerEvent`        | `Optional`        | `boolean`                      | `false`   | Enable custom events support                        |
+| Свойство                      | Обязательность | Тип                            | По умолчанию | Описание                                    |
+| ----------------------------- | -------------- | ------------------------------ | ------------ | ------------------------------------------- |
+| `id`                          | `Обязательный` | `number`                       | -            | ID вашего счетчика Яндекс.Метрики           |
+| `name`                        | `Опциональный` | `string`                       | -            | Имя счетчика для идентификации              |
+| `prodOnly`                    | `Опциональный` | `boolean`                      | `false`      | Инициализировать только в продакшене        |
+| `loading`                     | `Опциональный` | `'async' \| 'defer' \| 'sync'` | `'async'`    | Стратегия загрузки скрипта                  |
+| `alternativeScriptUrl`        | `Опциональный` | `string`                       | -            | Альтернативный URL для загрузки скрипта     |
+| `default`                     | `Опциональный` | `boolean`                      | `false`      | Использовать как счетчик по умолчанию       |
+| `options.clickmap`            | `Опциональный` | `boolean`                      | `false`      | Включить карту кликов                       |
+| `options.trackLinks`          | `Опциональный` | `boolean`                      | `false`      | Включить отслеживание внешних ссылок        |
+| `options.accurateTrackBounce` | `Опциональный` | `boolean`                      | `false`      | Точный расчет показателя отказов            |
+| `options.trackHash`           | `Опциональный` | `boolean`                      | `false`      | Отслеживание изменений хэша URL             |
+| `options.webvisor`            | `Опциональный` | `boolean`                      | `false`      | Включить вебвизор и запись сессий           |
+| `options.ecommerce`           | `Опциональный` | `boolean \| string`            | `false`      | E-commerce трекинг (true или имя dataLayer) |
+| `options.triggerEvent`        | `Опциональный` | `boolean`                      | `false`      | Включить поддержку пользовательских событий |
 
 ---
 
-## API Reference
+## Справочник API
 
-### Automatic ID Handling
+### Автоматическое определение счетчика
 
 ```typescript
-// With automatic ID (uses configured ID)
-ym('reachGoal', 'purchase'); // → ym(104120889, 'reachGoal', 'purchase')
+// Автоматическое использование ID (использует сконфигурированный ID)
+ym('reachGoal', 'покупка'); // → ym(104120889, 'reachGoal', 'покупка')
 
-// With explicit ID (overrides configured ID)
-ym(999999, 'hit', '/homepage'); // → ym(999999, 'hit', '/homepage')
+// Явное указание ID счетчика
+ym(999999, 'hit', '/главная'); // → ym(999999, 'hit', '/главная')
+
+// Использование по имени счетчика
+ym('аналитика', 'params', { userId: '123' }); // → ym(104120889, 'params', { userId: '123' })
 ```
 
-### YMService Methods
+### Методы YMService
 
 ```typescript
-// Universal method for all Yandex Metrika API calls
+// Универсальный метод для всех вызовов API Яндекс.Метрики
 ym(...args: unknown[]): void
 
-// Examples:
-ym('hit', '/page-url'); // Track page view
-ym('reachGoal', 'goal-name', params); // Track goal
-ym('params', { userId: '123' }); // Set visit parameters
-ym('userParams', userData); // Set user parameters
-ym('ecommerce.addProduct', productData); // E-commerce tracking
+// Примеры:
+ym('hit', '/url-страницы'); // Отслеживание просмотра страницы
+ym('reachGoal', 'имя-цели', params); // Отслеживание достижения цели
+ym('params', { userId: '123' }); // Установка параметров визита
+ym('userParams', userData); // Установка пользовательских параметров
+ym('ecommerce.addProduct', productData); // E-commerce трекинг
+```
+
+### Несколько счетчиков
+
+```typescript
+// Конфигурация нескольких счетчиков
+provideYandexMetrika([
+  {
+    id: 104120889,
+    name: 'продакшен',
+    prodOnly: true,
+    default: true,
+    options: { webvisor: true },
+  },
+  {
+    id: 35567075,
+    name: 'тестовый',
+    options: { trackLinks: true },
+  },
+]);
 ```
 
 ---
 
-## Community & Support
+## Сообщество и поддержка
 
-🔹 **Angular Community**:  
-Join our Telegram channel for Angular tips and discussions:  
 [![Telegram](https://img.shields.io/badge/Grandgular_Channel-2CA5E0?style=flat&logo=telegram)](https://t.me/grandgular)
-
-🔹 **Author**:  
-Connect with me on LinkedIn:  
 [![LinkedIn](https://img.shields.io/badge/Andrei_Shpileuski-0077B5?style=flat&logo=linkedin)](https://linkedin.com/in/andrei-shpileuski)
