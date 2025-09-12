@@ -1,0 +1,33 @@
+1. Декораторы
+@YandexMetrikaGoal('purchase')
+onPurchase() {
+  // автоматически вызовет ym('reachGoal', 'purchase')
+}
+
+2. Directive для трекинга событий
+<button (ymClick)="'button_click'" [ymParams]="{type: 'primary'}">
+  Click me
+</button>
+
+3. RxJS Integration
+this.http.get('/api/data').pipe(
+  trackYandexMetrica('api_call_success')
+)
+
+4. Router events tracking
+provideYandexMetrika({
+  id: 123,
+  trackRouter: true, // автотрекинг навигации
+  routerGoals: {
+    '/home': 'visit_home',
+    '/products': 'visit_products'
+  }
+})
+
+5. DevTools для разработки
+YMService.enableDevTools() // Показывает отправляемые события
+
+6. Better TypeScript support
+
+7. Consent management
+YMService.setConsent(true) // После согласия пользователя
