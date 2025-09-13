@@ -1,0 +1,224 @@
+<!-- app.component.html -->
+<div class="demo-container">
+  <h1>Демонстрация директив Яндекс.Метрики</h1>
+
+  <!-- 1. ymGoal - Отслеживание целей -->
+  <section class="demo-section">
+    <h2>ymGoal - Отслеживание целей (reachGoal)</h2>
+
+    <div class="demo-example">
+      <h3>Простая цель</h3>
+      <button [ymGoal]="'button_click'">Нажми меня</button>
+      <code>&lt;button [ymGoal]="'button_click'"&gt;Нажми меня&lt;/button&gt;</code>
+    </div>
+
+    <div class="demo-example">
+      <h3>Цель с параметрами</h3>
+      <button [ymGoal]="'purchase'" [ymParams]="{ product: 'iPhone', price: 999, currency: 'USD' }">
+        Купить iPhone
+      </button>
+      <code>
+        &lt;button [ymGoal]="'purchase'" [ymParams]="{{ '{' }} product: 'iPhone', price: 999
+        {{ '}' }}"&gt; Купить iPhone &lt;/button&gt;
+      </code>
+    </div>
+
+    <div class="demo-example">
+      <h3>Цель с событием наведения</h3>
+      <div [ymGoal]="'card_hover'" [ymEvent]="'mouseenter'" class="hover-card">Наведи на меня</div>
+      <code>
+        &lt;div [ymGoal]="'card_hover'" [ymEvent]="'mouseenter'"&gt; Наведи на меня &lt;/div&gt;
+      </code>
+    </div>
+
+    <div class="demo-example">
+      <h3>Цель с определенным счетчиком</h3>
+      <button
+        [ymGoal]="'conversion'"
+        [ymCounterId]="123456"
+        [ymParams]="{ source: 'banner', campaign: 'summer2024' }"
+      >
+        Конверсия
+      </button>
+      <code>
+        &lt;button [ymGoal]="'conversion'" [ymCounterId]="123456" [ymParams]="{{ '{' }} source:
+        'banner' {{ '}' }}"&gt; Конверсия &lt;/button&gt;
+      </code>
+    </div>
+
+    <div class="demo-example">
+      <h3>Условный трекинг</h3>
+      <button [ymGoal]="'premium_action'" [ymCondition]="isPremiumUser()">Премиум функция</button>
+      <code>
+        &lt;button [ymGoal]="'premium_action'" [ymCondition]="isPremiumUser"&gt; Премиум функция
+        &lt;/button&gt;
+      </code>
+    </div>
+  </section>
+
+  <!-- 2. ymHit - Виртуальные хиты -->
+  <section class="demo-section">
+    <h2>ymHit - Виртуальные просмотры страниц (hit)</h2>
+
+    <div class="demo-example">
+      <h3>Виртуальная страница</h3>
+      <button [ymHit]="'/virtual/modal-success'" [ymEvent]="'click'">Открыть модальное окно</button>
+      <code>
+        &lt;button [ymHit]="'/virtual/modal-success'" [ymEvent]="'click'"&gt; Открыть модальное окно
+        &lt;/button&gt;
+      </code>
+    </div>
+
+    <div class="demo-example">
+      <h3>Хит с параметрами</h3>
+      <div
+        [ymHit]="'/virtual/tab-content'"
+        [ymEvent]="'click'"
+        [ymParams]="{ tab: 'profile', action: 'switch' }"
+      >
+        Переключить таб
+      </div>
+      <code>
+        &lt;div [ymHit]="'/virtual/tab-content'" [ymParams]="{{ '{' }} tab: 'profile' {{ '}' }}"&gt;
+        Переключить таб &lt;/div&gt;
+      </code>
+    </div>
+  </section>
+
+  <!-- 3. ymParams - Параметры визита -->
+  <section class="demo-section">
+    <h2>ymParams - Параметры визита</h2>
+
+    <div class="demo-example">
+      <h3>Параметры при клике</h3>
+      <button [ymParams]="{ button_clicked: true, section: 'navigation' }" [ymEvent]="'click'">
+        Отследить клик
+      </button>
+      <code>
+        &lt;button [ymParams]="{{ '{' }} button_clicked: true, section: 'navigation' {{ '}' }}"&gt;
+        Отследить клик &lt;/button&gt;
+      </code>
+    </div>
+
+    <div class="demo-example">
+      <h3>Параметры при скролле</h3>
+      <div
+        [ymParams]="{ section_scrolled: true, element: 'news' }"
+        [ymEvent]="'scroll'"
+        style="height: 100px; overflow-y: scroll; padding: 10px; border: 1px solid #ccc"
+      >
+        Прокрути меня
+        <div style="height: 300px">Контент для скролла...</div>
+      </div>
+      <code>
+        &lt;div [ymParams]="{{ '{' }} section_scrolled: true {{ '}' }}" [ymEvent]="'scroll'"&gt;
+        Прокрути меня &lt;/div&gt;
+      </code>
+    </div>
+  </section>
+
+  <!-- 4. ymNotBounce - Отмена отскока -->
+  <section class="demo-section">
+    <h2>ymNotBounce - Отмена отскока</h2>
+
+    <div class="demo-example">
+      <h3>Пользователь активен</h3>
+      <button ymNotBounce [ymEvent]="'click'">Я активно пользуюсь сайтом!</button>
+      <code>
+        &lt;button [ymNotBounce] [ymEvent]="'click'"&gt; Я активно пользуюсь сайтом! &lt;/button&gt;
+      </code>
+    </div>
+
+    <div class="demo-example">
+      <h3>Отслеживание активности</h3>
+      <div
+        ymNotBounce
+        [ymEvent]="'mousemove'"
+        style="padding: 20px; background: #f0f8ff; border-radius: 8px"
+      >
+        Подвигайте мышкой в этой области
+      </div>
+      <code>
+        &lt;div [ymNotBounce] [ymEvent]="'mousemove'"&gt; Подвигайте мышкой в этой области
+        &lt;/div&gt;
+      </code>
+    </div>
+  </section>
+
+  <!-- 5. ymMethod - Универсальный метод -->
+  <section class="demo-section">
+    <h2>ymMethod - Универсальный метод</h2>
+
+    <div class="demo-example">
+      <h3>Пользовательские параметры</h3>
+      <button
+        [ymMethod]="'userParams'"
+        [ymParams]="{ user_action: 'download', file_type: 'pdf' }"
+        [ymEvent]="'click'"
+      >
+        Скачать PDF
+      </button>
+      <code>
+        &lt;button [ymMethod]="'userParams'" [ymParams]="{{ '{' }} user_action: 'download'
+        {{ '}' }}"&gt; Скачать PDF &lt;/button&gt;
+      </code>
+    </div>
+
+    <div class="demo-example">
+      <h3>Файловая загрузка</h3>
+      <button [ymMethod]="'file'" [ymParams]="'/documents/price-list.pdf'" [ymEvent]="'click'">
+        Скачать прайс-лист
+      </button>
+      <code>
+        &lt;button [ymMethod]="'file'" [ymParams]="'/documents/price-list.pdf'"&gt; Скачать
+        прайс-лист &lt;/button&gt;
+      </code>
+    </div>
+  </section>
+
+  <!-- 6. Формы и инпуты -->
+  <section class="demo-section">
+    <h2>Формы и инпуты</h2>
+
+    <div class="demo-example">
+      <h3>Отправка формы</h3>
+      <form [ymGoal]="'form_submitted'" [ymEvent]="'submit'" (submit)="$event.preventDefault()">
+        <input type="text" placeholder="Имя" />
+        <input type="email" placeholder="Email" />
+        <button type="submit">Отправить</button>
+      </form>
+      <code>
+        &lt;form [ymGoal]="'form_submitted'" [ymEvent]="'submit'"&gt; &lt;!-- поля формы --&gt;
+        &lt;button type="submit"&gt;Отправить&lt;/button&gt; &lt;/form&gt;
+      </code>
+    </div>
+
+    <div class="demo-example">
+      <h3>Поисковый запрос</h3>
+      <input
+        [ymGoal]="'search_performed'"
+        [ymEvent]="'input'"
+        [ymParams]="{ type: 'search', source: 'header' }"
+        placeholder="Поиск..."
+      />
+      <code>
+        &lt;input [ymGoal]="'search_performed'" [ymEvent]="'input'" [ymParams]="{{ '{' }} type:
+        'search' {{ '}' }}" placeholder="Поиск..." /&gt;
+      </code>
+    </div>
+
+    <div class="demo-example">
+      <h3>Фокус на поле</h3>
+      <input
+        [ymGoal]="'input_focused'"
+        [ymEvent]="'focus'"
+        [ymParams]="{ field: 'email' }"
+        placeholder="Введите email"
+      />
+      <code>
+        &lt;input [ymGoal]="'input_focused'" [ymEvent]="'focus'" [ymParams]="{{ '{' }} field:
+        'email' {{ '}' }}" placeholder="Введите email" /&gt;
+      </code>
+    </div>
+  </section>
+</div>
