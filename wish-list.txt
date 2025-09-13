@@ -31,3 +31,5 @@ YMService.enableDevTools() // Показывает отправляемые со
 
 7. Consent management
 YMService.setConsent(true) // После согласия пользователя
+
+8. on/off noscript
