@@ -1,6 +1,7 @@
 /**
  * Интерфейс конфигурации для счетчика Яндекс.Метрики.
  * Предоставляет гибкие настройки для одного или нескольких счетчиков с учетом окружения.
+ * Официальная документация: https://yandex.ru/support/metrica/ru/code/counter-initialize
  *
  * @example
  * // Базовая конфигурация
@@ -22,15 +23,6 @@
  * @property alternativeScriptUrl - Кастомный URL для загрузки скрипта Яндекс.Метрики. Полезно для кастомных CDN или оптимизаций.
  * @property default - Помечает счетчик как используемый по умолчанию. Если настроено несколько счетчиков, первый default будет использоваться когда счетчик не указан явно.
  * @property options - Настройки функций отслеживания Яндекс.Метрики
- * @property options.clickmap - Включить карту кликов (heatmap). По умолчанию: false
- * @property options.trackLinks - Включить отслеживание внешних ссылок. По умолчанию: false
- * @property options.accurateTrackBounce - Включить точный расчет показателя отказов. По умолчанию: false
- * @property options.trackHash - Включить отслеживание изменений хэша URL. По умолчанию: false
- * @property options.webvisor - Включить вебвизор и запись сессий. По умолчанию: false
- * @property options.ecommerce - Включить e-commerce трекинг. Может быть boolean или custom dataLayer name. По умолчанию: false
- * @property options.triggerEvent - Включить поддержку пользовательских событий. По умолчанию: false
- *
- * @see provideYandexMetrika - Функция для предоставления конфигурации
  */
 export interface YMConfig {
   id: number;
@@ -40,12 +32,97 @@ export interface YMConfig {
   alternativeScriptUrl?: string;
   default?: boolean;
   options?: {
+    /**
+     * Включить карту кликов (heatmap)
+     * @default true
+     */
     clickmap?: boolean;
+
+    /**
+     * Включить отслеживание переходов по внешним ссылкам
+     * @default true
+     */
     trackLinks?: boolean;
-    accurateTrackBounce?: boolean;
+
+    /**
+     * Точный показатель отказов
+     * - true: включить (15 секунд)
+     * - false: отключить
+     * - number: время в миллисекундах
+     * @default true
+     */
+    accurateTrackBounce?: boolean | number;
+
+    /**
+     * Включить отслеживание изменений хэша в адресной строке
+     * @default false
+     */
     trackHash?: boolean;
+
+    /**
+     * Включить вебвизор и запись сессий
+     * @default false
+     */
     webvisor?: boolean;
-    ecommerce?: boolean | string;
+
+    /**
+     * Включить e-commerce трекинг
+     * - true: использовать dataLayer
+     * - string: кастомное имя dataLayer
+     * - any[]: кастомный массив данных
+     * @default false
+     */
+    ecommerce?: boolean | string | any[];
+
+    /**
+     * Включить проверку готовности счетчика
+     * @default false
+     */
     triggerEvent?: boolean;
+
+    /**
+     * Технический параметр для работы кода вставки (SSR)
+     * @default true
+     */
+    ssr?: boolean;
+
+    /**
+     * Запись заголовков страницы
+     * @default true
+     */
+    sendTitle?: boolean;
+
+    /**
+     * Тип счетчика (0 - обычный, 1 - РСЯ)
+     * @default 0
+     */
+    type?: number;
+
+    /**
+     * Доверенные домены для записи содержимого iframe
+     */
+    trustedDomains?: string[];
+
+    /**
+     * Параметры визита, передаваемые при инициализации
+     */
+    params?: object | any[];
+
+    /**
+     * Отключить автоматическую отправку данных при инициализации
+     * @default false
+     */
+    defer?: boolean;
+
+    /**
+     * Запись содержимого iframe без счетчика в дочернем окне
+     * @default false
+     */
+    childIframe?: boolean;
+
+    /**
+     * Параметры посетителей сайта, передаваемые при инициализации
+     */
+    userParams?: object;
   };
 }
