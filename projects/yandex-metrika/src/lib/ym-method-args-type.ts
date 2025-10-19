@@ -1,7 +1,29 @@
 import { YMMethod } from './ym-method-enum';
 
 /**
- * Тип для аргументов методов (для улучшения типобезопасности)
+ * Union тип всех доступных методов как строковых литералов
+ */
+export type YMMethodString =
+  | 'addFileExtension'
+  | 'extLink'
+  | 'file'
+  | 'firstPartyParams'
+  | 'firstPartyParamsHashed'
+  | 'getClientID'
+  | 'hit'
+  | 'notBounce'
+  | 'params'
+  | 'reachGoal'
+  | 'setUserID'
+  | 'userParams';
+
+/**
+ * Объединенный тип для метода (enum + string literal)
+ */
+export type YMMethodType = YMMethod | YMMethodString | string;
+
+/**
+ * Интерфейс аргументов для каждого метода Яндекс.Метрики
  */
 export type YMMethodArgs = {
   [YMMethod.AddFileExtension]: [extensions: string | string[]];
@@ -87,3 +109,17 @@ export type YMMethodArgs = {
     },
   ];
 };
+
+/**
+ * Тип для аргументов известных методов
+ */
+export type KnownMethodArgs<T extends YMMethodType> = T extends YMMethod
+  ? YMMethodArgs[T]
+  : T extends YMMethodString
+    ? YMMethodArgs[Extract<YMMethod, T>]
+    : any[];
+
+/**
+ * Список известных методов для проверки
+ */
+export const KNOWN_METHODS = new Set(Object.values(YMMethod));

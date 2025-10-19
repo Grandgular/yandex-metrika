@@ -1,6 +1,6 @@
 {
   "name": "@grandgular/yandex-metrika",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "peerDependencies": {
     "@angular/common": "^19.0.0 || ^20.0.0",
     "@angular/core": "^19.0.0 || ^20.0.0"
@@ -22,18 +22,13 @@
   "homepage": "https://github.com/grandgular/yandex-metrika#readme",
   "keywords": [
     "angular",
+    "ангуляр",
     "yandex",
     "metrika",
+    "metrics",
     "яндекс",
     "метрика",
     "analytics",
-    "metrics",
-    "tracking",
-    "ssr",
-    "universal",
-    "typescript",
-    "rxjs",
-    "service",
-    "integration"
+    "metrics"
   ]
 }

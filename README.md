@@ -1,19 +1,13 @@
 <img src="https://raw.githubusercontent.com/Grandgular/rx/refs/heads/main/projects/showcase/public/favicon.svg" width="220px" alt="Grandgular Logo">
 
 # @grandgular/yandex-metrika
+
 [![npm version](https://badge.fury.io/js/@grandgular%2Fyandex-metrika.svg)](https://badge.fury.io/js/@grandgular%2Fyandex-metrika)
 [![Лицензия: MIT](https://img.shields.io/badge/Лицензия-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Telegram](https://img.shields.io/badge/Канал_Grandgular-2CA5E0?style=flat&logo=telegram)](https://t.me/grandgular)
 [![LinkedIn](https://img.shields.io/badge/Андрей_Шпилевский-0077B5?style=flat&logo=linkedin)](https://linkedin.com/in/andrei-shpileuski)
 
 ### Angular сервис для простой интеграции Яндекс.Метрики с поддержкой SSR, TypeScript типами и гибкой конфигурацией.
-
-## Обновления в версии 1.2.0:
-
-#### Параметры инициализации счетчика приведены в соответствие с официальной документацией Яндекс.Метрики:
-
-- **Добавлены недостающие параметры:** `ssr`, `sendTitle`, `type`, `trustedDomains`, `params`, `defer`, `childIframe`, `userParams`
-- **Источник:** [Официальная документация](https://yandex.ru/support/metrica/ru/code/counter-initialize)
 
 ## Возможности
 
@@ -26,6 +20,25 @@
 ✅ Окружение-зависимая инициализация (режим prodOnly)  
 ✅ NoScript фолбэк для пользователей с отключенным JavaScript  
 ✅ Простой паттерн провайдеров
+
+---
+
+## Обновления в версии 1.3.0:
+
+- **Типобезопасные методы**: `execute` и `executeWithCounter` с полной проверкой типов для API Яндекс.Метрики
+- **Метод `ym` устаревает**: будет удален в версии 2.0.0
+- **Enum YMMethod** - все основные методы API с автодополнением
+- **Предупреждения** при опечатках в названиях методов
+
+```typescript
+// Новая типобезопасность
+this.metrika.execute(YMMethod.Hit, '/page');
+this.metrika.execute('reachGoal', 'purchase');
+
+// Миграция с ym()
+this.metrika.execute('hit', '/page'); // или this.metrika.execute(YMMethod.Hit, '/page') вместо ym('hit', '/page')
+this.metrika.executeWithCounter(123123123, YMMethod.Hit, '/page'); // вместо ym(123123123, 'hit', '/page')
+```
 
 ---
 
@@ -47,10 +60,12 @@ import { provideYandexMetrika } from '@grandgular/yandex-metrika';
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    // Вариант с одним счетчиком
     provideYandexMetrika({
       id: 104120889, // Обязательный: ID вашего счетчика
       prodOnly: true, // Опционально: инициализировать только в продакшене
       loading: 'async', // Опционально: стратегия загрузки
+      name: 'main', // Опционально: Имя счетчика для идентификации
       options: {
         webvisor: true, // Включить вебвизор
         ecommerce: 'dataLayer', // E-commerce трекинг
@@ -58,6 +73,19 @@ export const appConfig: ApplicationConfig = {
         // и т.д.
       },
     }),
+
+    // Вариант с несколькими счетчиками
+    provideYandexMetrika([
+      {
+        id: 104120888,
+        default: true, // Будет использоваться по дефолту при вызове метода execute
+        name: 'main',
+      },
+      {
+        id: 104120889, // Не по дефолту. Использовать executeWithCounter(104120889, ...) или executeWithCounter('secondary', ...)
+        name: 'secondary',
+      },
+    ]),
   ],
 };
 ```
@@ -65,7 +93,7 @@ export const appConfig: ApplicationConfig = {
 ### Использование в компонентах:
 
 ```typescript
-import { YMService } from '@grandgular/yandex-metrika';
+import { YMService, YMMethod } from '@grandgular/yandex-metrika';
 
 @Component({
   // ...
@@ -73,11 +101,22 @@ import { YMService } from '@grandgular/yandex-metrika';
 export class MyComponent {
   metrica = inject(YMService);
 
-  onSignUp() {
-    this.metrica.ym('reachGoal', 'регистрация', {
-      план: 'премиум',
-      источник: 'google',
-    });
+  someMethod() {
+    // С использованием enum (максимальная типобезопасность)
+    this.metrica.execute(YMMethod.ReachGoal, 'conversion');
+
+    // Или со строковыми литералами (удобно)
+    this.metrica.execute('reachGoal', 'conversion');
+
+    // С выбором счетчика по полю name
+    this.metrica.executeWithCounter('main', YMMethod.ReachGoal, 'conversion');
+
+    // С выбором счетчика по id
+    this.metrica.executeWithCounter(104120889, YMMethod.ExtLink, 'https://external.com');
+
+    // Вызом несуществующего метода метрики
+    this.metrica.execute('todoo');
+    // В консоли: Вызывается неизвестный метод "todoo". Возможна опечатка
   }
 }
 ```
@@ -109,57 +148,6 @@ export class MyComponent {
 | `options.defer`               | `Опциональный` | `boolean`                      | `false`      | Отключить автоматическую отправку данных при инициализации  |
 | `options.childIframe`         | `Опциональный` | `boolean`                      | `false`      | Запись содержимого iframe без счетчика в дочернем окне      |
 | `options.userParams`          | `Опциональный` | `object`                       | -            | Параметры посетителей сайта, передаваемые при инициализации |
-
----
-
-## Справочник API
-
-### Автоматическое определение счетчика
-
-```typescript
-// Автоматическое использование ID (использует сконфигурированный ID)
-ym('reachGoal', 'покупка'); // → ym(104120889, 'reachGoal', 'покупка')
-
-// Явное указание ID счетчика
-ym(999999, 'hit', '/главная'); // → ym(999999, 'hit', '/главная')
-
-// Использование по имени счетчика
-ym('аналитика', 'params', { userId: '123' }); // → ym(104120889, 'params', { userId: '123' })
-```
-
-### Методы YMService
-
-```typescript
-// Универсальный метод для всех вызовов API Яндекс.Метрики
-ym(...args: unknown[]): void
-
-// Примеры:
-  ym('hit', '/url-страницы'); // Отслеживание просмотра страницы
-ym('reachGoal', 'имя-цели', params); // Отслеживание достижения цели
-ym('params', { userId: '123' }); // Установка параметров визита
-ym('userParams', userData); // Установка пользовательских параметров
-ym('ecommerce.addProduct', productData); // E-commerce трекинг
-```
-
-### Несколько счетчиков
-
-```typescript
-// Конфигурация нескольких счетчиков
-provideYandexMetrika([
-  {
-    id: 104120889,
-    name: 'продакшен',
-    prodOnly: true,
-    default: true,
-    options: { webvisor: true },
-  },
-  {
-    id: 35567075,
-    name: 'тестовый',
-    options: { trackLinks: true },
-  },
-]);
-```
 
 ---
 
