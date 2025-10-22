@@ -30,6 +30,14 @@ import { KNOWN_METHODS, KnownMethodArgs, YMMethodType } from './ym-method-args-t
  *   this.metrika.executeWithCounter('secondary', YMMethod.Hit, '/page');
  * }
  *
+ * // Chaining примеры
+ * trackUserJourney() {
+ *   this.metrika
+ *     .execute(YMMethod.Hit, '/page')
+ *     .execute('reachGoal', 'view')
+ *     .execute(YMMethod.SetUserID, 'user-123');
+ * }
+ *
  * @remarks
  * - 🛡️ Полная типобезопасность с автодополнением
  * - 🔧 Поддержка как enum, так и строковых литералов
@@ -38,6 +46,7 @@ import { KNOWN_METHODS, KnownMethodArgs, YMMethodType } from './ym-method-args-t
  * - 🚀 Production-оптимизации
  * - ⚡ Автоматические проверки окружения
  * - 📝 Предупреждения о возможных опечатках
+ * - ⛓️ Chaining поддержка для группировки вызовов
  *
  * @see YMConfig - Конфигурация счетчиков
  * @see provideYandexMetrika - Настройка провайдеров
@@ -120,6 +129,7 @@ export class YMService {
    *
    * @param method - Название метода (enum, строковый литерал или произвольная строка)
    * @param args - Аргументы метода с типобезопасностью для известных методов
+   * @returns this для поддержки chaining
    *
    * @example
    * // Использование enum (рекомендуется)
@@ -130,10 +140,17 @@ export class YMService {
    *
    * // Произвольный метод (с предупреждением)
    * this.metrika.execute('customMethod', 'data');
+   *
+   * // Chaining
+   * this.metrika
+   *   .execute(YMMethod.Hit, '/page')
+   *   .execute('reachGoal', 'view')
+   *   .execute(YMMethod.SetUserID, 'user-123');
    */
-  public execute<T extends YMMethodType>(method: T, ...args: KnownMethodArgs<T>): void {
+  public execute<T extends YMMethodType>(method: T, ...args: KnownMethodArgs<T>): this {
     this.validateMethod(method);
     this.ym(method as any, ...args);
+    return this;
   }
 
   /**
@@ -145,6 +162,7 @@ export class YMService {
    * @param counterIdOrName - ID счетчика или его имя из конфигурации
    * @param method - Название метода (enum, строковый литерал или произвольная строка)
    * @param args - Аргументы метода с типобезопасностью для известных методов
+   * @returns this для поддержки chaining
    *
    * @example
    * // По ID счетчика
@@ -152,14 +170,20 @@ export class YMService {
    *
    * // По имени счетчика
    * this.metrika.executeWithCounter('secondary', 'reachGoal', 'signup');
+   *
+   * // Chaining
+   * this.metrika
+   *   .executeWithCounter('main', YMMethod.Hit, '/page')
+   *   .executeWithCounter('secondary', YMMethod.ReachGoal, 'conversion');
    */
   public executeWithCounter<T extends YMMethodType>(
     counterIdOrName: number | string,
     method: T,
     ...args: KnownMethodArgs<T>
-  ): void {
+  ): this {
     this.validateMethod(method);
     this.ym(counterIdOrName, method as any, ...args);
+    return this;
   }
 
   /**
