@@ -23,22 +23,26 @@
 
 ---
 
-## Обновления в версии 1.3.0:
+## Обновления в версии 1.4.0:
 
-- **Типобезопасные методы**: `execute` и `executeWithCounter` с полной проверкой типов для API Яндекс.Метрики
-- **Метод `ym` устаревает**: будет удален в версии 2.0.0
-- **Enum YMMethod** - все основные методы API с автодополнением
-- **Предупреждения** при опечатках в названиях методов
+- **Chaining**: методы `execute` и `executeWithCounter` теперь возвращают `this`, что дает возможность вызывать эти методы цепочкой (method chaining) для последовательного выполнения нескольких команд. 
 
 ```typescript
-// Новая типобезопасность
-this.metrika.execute(YMMethod.Hit, '/page');
+// Без chaining
+this.metrika.executeWithCounter(123123123, YMMethod.Hit, '/page');
+this.metrika.execute('hit', '/page');
 this.metrika.execute('reachGoal', 'purchase');
 
-// Миграция с ym()
-this.metrika.execute('hit', '/page'); // или this.metrika.execute(YMMethod.Hit, '/page') вместо ym('hit', '/page')
-this.metrika.executeWithCounter(123123123, YMMethod.Hit, '/page'); // вместо ym(123123123, 'hit', '/page')
+// С chaining
+this.metrika.executeWithCounter(123123123, YMMethod.Hit, '/page')
+            .execute('hit', '/page')
+            .execute('reachGoal', 'purchase');
 ```
+
+- [x] 1 логическая цепочка
+- [x] Убрано дублирование обращения к сервису.
+- [x] Код более компактный и читаемый
+- [x] Четко видна последовательность действий
 
 ---
 
@@ -117,6 +121,11 @@ export class MyComponent {
     // Вызом несуществующего метода метрики
     this.metrica.execute('todoo');
     // В консоли: Вызывается неизвестный метод "todoo". Возможна опечатка
+    
+    // Method chaining
+    this.metrika.executeWithCounter(123123123, YMMethod.Hit, '/page')
+                .execute('hit', '/page')
+                .execute('reachGoal', 'purchase');
   }
 }
 ```
