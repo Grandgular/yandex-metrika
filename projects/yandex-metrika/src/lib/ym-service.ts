@@ -4,7 +4,7 @@ import { YM_CONFIG_TOKEN, YM_DEFAULT_CONFIG_TOKEN } from './ym-config-token';
 import { YMConfig } from './ym-config-interface';
 import { libName } from './ym-lib-name';
 import { YMMethod } from './ym-method-enum';
-import { KNOWN_METHODS, KnownMethodArgs, YMMethodType } from './ym-method-args-type';
+import { KNOWN_METHODS, KnownMethodArgs, YMMethodArgs, YMMethodType } from './ym-method-args-type';
 
 /**
  * Сервис для типобезопасной работы с Яндекс.Метрикой в Angular приложениях
@@ -17,46 +17,79 @@ import { KNOWN_METHODS, KnownMethodArgs, YMMethodType } from './ym-method-args-t
  * // Внедрение сервиса
  * private metrika = inject(YMService);
  *
- * // Основные сценарии использования
+ * // Базовые сценарии использования
  * trackPageView() {
- *   this.metrika.execute(YMMethod.Hit, '/page-url');
+ *   this.metrika.hit('/page-url');
  * }
  *
  * trackGoal() {
- *   this.metrika.execute('reachGoal', 'purchase', { order_price: 1000 });
+ *   this.metrika.reachGoal('purchase', { order_price: 1000 });
  * }
  *
+ * trackUser() {
+ *   this.metrika.setUserID('user-123');
+ * }
+ *
+ * // Работа с несколькими счетчиками
  * trackWithCustomCounter() {
- *   this.metrika.executeWithCounter('secondary', YMMethod.Hit, '/page');
+ *   this.metrika.hitWithCounter('secondary', '/page');
+ * }
+ *
+ * // Универсальные методы для произвольных вызовов
+ * customTracking() {
+ *   this.metrika.execute('customMethod', 'data');
+ *   this.metrika.executeWithCounter('analytics', YMMethod.Hit, '/page');
  * }
  *
  * // Chaining примеры
  * trackUserJourney() {
  *   this.metrika
- *     .execute(YMMethod.Hit, '/page')
- *     .execute('reachGoal', 'view')
- *     .execute(YMMethod.SetUserID, 'user-123');
+ *     .hit('/page')
+ *     .reachGoal('view')
+ *     .setUserID('user-123');
  * }
  *
  * @remarks
- * - 🛡️ Полная типобезопасность с автодополнением
- * - 🔧 Поддержка как enum, так и строковых литералов
+ * - 🛡️ Полная типобезопасность с автодополнением для всех методов API
+ * - 🔧 Поддержка как enum (YMMethod), так и строковых литералов
  * - 🎯 Работа с одним или несколькими счетчиками
  * - 🌐 SSR-совместимость (Angular Universal)
- * - 🚀 Production-оптимизации
- * - ⚡ Автоматические проверки окружения
- * - 📝 Предупреждения о возможных опечатках
+ * - 🚀 Production-оптимизации (prodOnly флаг)
+ * - ⚡ Автоматические проверки окружения (браузер, доступность API)
+ * - 📝 Предупреждения о возможных опечатках в названиях методов
  * - ⛓️ Chaining поддержка для группировки вызовов
+ * - 📚 Специализированные методы для каждого API вызова Яндекс.Метрики
+ * - 🔄 Универсальные методы execute() и executeWithCounter() для гибкости
+ *
+ * ## Уровни доступа к API:
+ *
+ * ### 1. Специализированные методы (рекомендуется)
+ * Полностью типобезопасные методы для каждого API вызова:
+ * - `hit()`, `reachGoal()`, `setUserID()` и другие
+ * - `methodNameWithCounter()` версии для конкретных счетчиков
+ *
+ * ### 2. Универсальные методы (для продвинутых сценариев)
+ * Гибкие методы для произвольных вызовов:
+ * - `execute(method, ...args)` - для счетчика по умолчанию
+ * - `executeWithCounter(counter, method, ...args)` - для указанного счетчика
+ *
+ * ### 3. Низкоуровневый метод (устаревший)
+ * - `ym()` - прямой вызов API (deprecated, будет удален в будущих версиях)
  *
  * @see YMConfig - Конфигурация счетчиков
  * @see provideYandexMetrika - Настройка провайдеров
  * @see YMMethod - Enum доступных методов API
+ * @see YMMethodArgs - Типы аргументов для всех методов
+ *
+ * @publicApi
  */
 @Injectable({ providedIn: 'root' })
 export class YMService {
   readonly #configs = inject(YM_CONFIG_TOKEN, { optional: true });
   readonly #defaultConfig = inject(YM_DEFAULT_CONFIG_TOKEN, { optional: true });
   readonly #isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
+  // ==================== УНИВЕРСАЛЬНЫЕ МЕТОДЫ ====================
 
   /**
    * Универсальный метод для вызова любого метода API Яндекс.Метрики.
@@ -185,6 +218,238 @@ export class YMService {
     this.ym(counterIdOrName, method as any, ...args);
     return this;
   }
+
+  // ==================== СПЕЦИАЛИЗИРОВАННЫЕ МЕТОДЫ ====================
+
+  /**
+   * Добавить поддержку расширения файла
+   * @see https://yandex.ru/support/metrica/ru/objects/addfileextension
+   */
+  public addFileExtension(...args: YMMethodArgs[YMMethod.AddFileExtension]): this {
+    return this.execute(YMMethod.AddFileExtension, ...args);
+  }
+
+  /**
+   * Добавить поддержку расширения файла (для конкретного счетчика)
+   * @see https://yandex.ru/support/metrica/ru/objects/addfileextension
+   */
+  public addFileExtensionWithCounter(
+    counterIdOrName: number | string,
+    ...args: YMMethodArgs[YMMethod.AddFileExtension]
+  ): this {
+    return this.executeWithCounter(counterIdOrName, YMMethod.AddFileExtension, ...args);
+  }
+
+  /**
+   * Отправка информации о переходе по внешней ссылке
+   * @see https://yandex.ru/support/metrica/ru/objects/extlink
+   */
+  public extLink(...args: YMMethodArgs[YMMethod.ExtLink]): this {
+    return this.execute(YMMethod.ExtLink, ...args);
+  }
+
+  /**
+   * Отправка информации о переходе по внешней ссылке (для конкретного счетчика)
+   * @see https://yandex.ru/support/metrica/ru/objects/extlink
+   */
+  public extLinkWithCounter(
+    counterIdOrName: number | string,
+    ...args: YMMethodArgs[YMMethod.ExtLink]
+  ): this {
+    return this.executeWithCounter(counterIdOrName, YMMethod.ExtLink, ...args);
+  }
+
+  /**
+   * Отправка информации о загрузке файла
+   * @see https://yandex.ru/support/metrica/ru/objects/file
+   */
+  public file(...args: YMMethodArgs[YMMethod.File]): this {
+    return this.execute(YMMethod.File, ...args);
+  }
+
+  /**
+   * Отправка информации о загрузке файла (для конкретного счетчика)
+   * @see https://yandex.ru/support/metrica/ru/objects/file
+   */
+  public fileWithCounter(
+    counterIdOrName: number | string,
+    ...args: YMMethodArgs[YMMethod.File]
+  ): this {
+    return this.executeWithCounter(counterIdOrName, YMMethod.File, ...args);
+  }
+
+  /**
+   * Отправка контактной информации посетителей сайта
+   * @see https://yandex.ru/support/metrica/ru/objects/first-party-params
+   */
+  public firstPartyParams(...args: YMMethodArgs[YMMethod.FirstPartyParams]): this {
+    return this.execute(YMMethod.FirstPartyParams, ...args);
+  }
+
+  /**
+   * Отправка контактной информации посетителей сайта (для конкретного счетчика)
+   * @see https://yandex.ru/support/metrica/ru/objects/first-party-params
+   */
+  public firstPartyParamsWithCounter(
+    counterIdOrName: number | string,
+    ...args: YMMethodArgs[YMMethod.FirstPartyParams]
+  ): this {
+    return this.executeWithCounter(counterIdOrName, YMMethod.FirstPartyParams, ...args);
+  }
+
+  /**
+   * Отправка контактной информации посетителей сайта с возможностью самостоятельного хеширования данных
+   * @see https://yandex.ru/support/metrica/ru/objects/first-party-params-hash
+   */
+  public firstPartyParamsHashed(...args: YMMethodArgs[YMMethod.FirstPartyParamsHashed]): this {
+    return this.execute(YMMethod.FirstPartyParamsHashed, ...args);
+  }
+
+  /**
+   * Отправка контактной информации посетителей сайта с возможностью самостоятельного хеширования данных (для конкретного счетчика)
+   * @see https://yandex.ru/support/metrica/ru/objects/first-party-params-hash
+   */
+  public firstPartyParamsHashedWithCounter(
+    counterIdOrName: number | string,
+    ...args: YMMethodArgs[YMMethod.FirstPartyParamsHashed]
+  ): this {
+    return this.executeWithCounter(counterIdOrName, YMMethod.FirstPartyParamsHashed, ...args);
+  }
+
+  /**
+   * Получение идентификатора посетителя, заданного Метрикой
+   * @see https://yandex.ru/support/metrica/ru/objects/get-client-id
+   */
+  public getClientID(...args: YMMethodArgs[YMMethod.GetClientID]): this {
+    return this.execute(YMMethod.GetClientID, ...args);
+  }
+
+  /**
+   * Получение идентификатора посетителя, заданного Метрикой (для конкретного счетчика)
+   * @see https://yandex.ru/support/metrica/ru/objects/get-client-id
+   */
+  public getClientIDWithCounter(
+    counterIdOrName: number | string,
+    ...args: YMMethodArgs[YMMethod.GetClientID]
+  ): this {
+    return this.executeWithCounter(counterIdOrName, YMMethod.GetClientID, ...args);
+  }
+
+  /**
+   * Отправка вручную данных о просмотрах для AJAX- и Flash-сайтов
+   * @see https://yandex.ru/support/metrica/ru/objects/hit
+   */
+  public hit(...args: YMMethodArgs[YMMethod.Hit]): this {
+    return this.execute(YMMethod.Hit, ...args);
+  }
+
+  /**
+   * Отправка вручную данных о просмотрах для AJAX- и Flash-сайтов (для конкретного счетчика)
+   * @see https://yandex.ru/support/metrica/ru/objects/hit
+   */
+  public hitWithCounter(
+    counterIdOrName: number | string,
+    ...args: YMMethodArgs[YMMethod.Hit]
+  ): this {
+    return this.executeWithCounter(counterIdOrName, YMMethod.Hit, ...args);
+  }
+
+  /**
+   * Передача информации о том, что визит пользователя не является отказом
+   * @see https://yandex.ru/support/metrica/ru/objects/notbounce
+   */
+  public notBounce(...args: YMMethodArgs[YMMethod.NotBounce]): this {
+    return this.execute(YMMethod.NotBounce, ...args);
+  }
+
+  /**
+   * Передача информации о том, что визит пользователя не является отказом (для конкретного счетчика)
+   * @see https://yandex.ru/support/metrica/ru/objects/notbounce
+   */
+  public notBounceWithCounter(
+    counterIdOrName: number | string,
+    ...args: YMMethodArgs[YMMethod.NotBounce]
+  ): this {
+    return this.executeWithCounter(counterIdOrName, YMMethod.NotBounce, ...args);
+  }
+
+  /**
+   * Дополнительный способ передачи пользовательских параметров в отчет Параметры визитов
+   * @see https://yandex.ru/support/metrica/ru/objects/params-method
+   */
+  public params(...args: YMMethodArgs[YMMethod.Params]): this {
+    return this.execute(YMMethod.Params, ...args);
+  }
+
+  /**
+   * Дополнительный способ передачи пользовательских параметров в отчет Параметры визитов (для конкретного счетчика)
+   * @see https://yandex.ru/support/metrica/ru/objects/params-method
+   */
+  public paramsWithCounter(
+    counterIdOrName: number | string,
+    ...args: YMMethodArgs[YMMethod.Params]
+  ): this {
+    return this.executeWithCounter(counterIdOrName, YMMethod.Params, ...args);
+  }
+
+  /**
+   * Достижение цели
+   * @see https://yandex.ru/support/metrica/ru/objects/reachgoal
+   */
+  public reachGoal(...args: YMMethodArgs[YMMethod.ReachGoal]): this {
+    return this.execute(YMMethod.ReachGoal, ...args);
+  }
+
+  /**
+   * Достижение цели (для конкретного счетчика)
+   * @see https://yandex.ru/support/metrica/ru/objects/reachgoal
+   */
+  public reachGoalWithCounter(
+    counterIdOrName: number | string,
+    ...args: YMMethodArgs[YMMethod.ReachGoal]
+  ): this {
+    return this.executeWithCounter(counterIdOrName, YMMethod.ReachGoal, ...args);
+  }
+
+  /**
+   * Передача идентификатора посетителя, заданного владельцем сайта
+   * @see https://yandex.ru/support/metrica/ru/objects/set-user-id
+   */
+  public setUserID(...args: YMMethodArgs[YMMethod.SetUserID]): this {
+    return this.execute(YMMethod.SetUserID, ...args);
+  }
+
+  /**
+   * Передача идентификатора посетителя, заданного владельцем сайта (для конкретного счетчика)
+   * @see https://yandex.ru/support/metrica/ru/objects/set-user-id
+   */
+  public setUserIDWithCounter(
+    counterIdOrName: number | string,
+    ...args: YMMethodArgs[YMMethod.SetUserID]
+  ): this {
+    return this.executeWithCounter(counterIdOrName, YMMethod.SetUserID, ...args);
+  }
+
+  /**
+   * Способ передачи пользовательских параметров в отчет Параметры посетителей
+   * @see https://yandex.ru/support/metrica/ru/objects/user-params
+   */
+  public userParams(...args: YMMethodArgs[YMMethod.UserParams]): this {
+    return this.execute(YMMethod.UserParams, ...args);
+  }
+
+  /**
+   * Способ передачи пользовательских параметров в отчет Параметры посетителей (для конкретного счетчика)
+   * @see https://yandex.ru/support/metrica/ru/objects/user-params
+   */
+  public userParamsWithCounter(
+    counterIdOrName: number | string,
+    ...args: YMMethodArgs[YMMethod.UserParams]
+  ): this {
+    return this.executeWithCounter(counterIdOrName, YMMethod.UserParams, ...args);
+  }
+
+  // ==================== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ====================
 
   /**
    * Проверяет метод и выводит предупреждение если метод неизвестен
