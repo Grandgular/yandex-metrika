@@ -23,22 +23,45 @@
 
 ---
 
-## Обновления в версии 1.3.0:
-
-- **Типобезопасные методы**: `execute` и `executeWithCounter` с полной проверкой типов для API Яндекс.Метрики
-- **Метод `ym` устаревает**: будет удален в версии 2.0.0
-- **Enum YMMethod** - все основные методы API с автодополнением
-- **Предупреждения** при опечатках в названиях методов
+## Обновления в версии 1.5.0:
 
 ```typescript
-// Новая типобезопасность
-this.metrika.execute(YMMethod.Hit, '/page');
-this.metrika.execute('reachGoal', 'purchase');
-
-// Миграция с ym()
-this.metrika.execute('hit', '/page'); // или this.metrika.execute(YMMethod.Hit, '/page') вместо ym('hit', '/page')
-this.metrika.executeWithCounter(123123123, YMMethod.Hit, '/page'); // вместо ym(123123123, 'hit', '/page')
+this.metrika
+  .hit('/page')
+  .reachGoal('purchase', { order_price: 1000 })
+  .setUserID('user-123');
 ```
+
+**Специализированные методы API** - добавлены типобезопасные методы для всех вызовов Яндекс.Метрики:
+- addFileExtension() - добавление расширений файлов
+- extLink() - отслеживание внешних ссылок
+- file() - загрузка файлов
+- firstPartyParams() - контактные данные
+- getClientID() - получение ClientID
+- hit() - просмотры страниц
+- notBounce() - отмена отказов
+- params() - параметры визитов
+- reachGoal() - цели
+- setUserID() - пользовательский ID
+- userParams() - параметры пользователей
+
++ Для каждого метода есть дубликат с выбором счетчика, например:
+
+```typescript
+// Используется счетчик по умолчанию
+this.metrika.hit('/page');
+
+// С выбором счетчика
+this.metrika.hitWithCounter(123123123, '/page');
+```
+
+### Как итог:
+- Полная типобезопасность с автодополнением
+- Проверка аргументов на этапе компиляции
+- Улучшенная читаемость кода
+- Снижение вероятности ошибок в названиях методов
+- Единообразный API для всех методов Яндекс.Метрики
+- Поддержка chaining для всех специализированных методов
 
 ---
 
@@ -117,6 +140,11 @@ export class MyComponent {
     // Вызом несуществующего метода метрики
     this.metrica.execute('todoo');
     // В консоли: Вызывается неизвестный метод "todoo". Возможна опечатка
+
+    // Method chaining
+    this.metrika.executeWithCounter(123123123, YMMethod.Hit, '/page')
+      .execute('hit', '/page')
+      .execute('reachGoal', 'purchase');
   }
 }
 ```
