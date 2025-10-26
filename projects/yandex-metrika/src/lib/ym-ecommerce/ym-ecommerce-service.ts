@@ -23,7 +23,7 @@ import {
  *
  * @example
  * // Отслеживание добавления товара в корзину
- * this.ecommerce.executeAddToCart({
+ * this.ecommerce.add({
  *   id: 'product-123',
  *   name: 'Футболка',
  *   price: 1000,
@@ -35,9 +35,12 @@ import {
 @Injectable({ providedIn: 'root' })
 export class YMEcommerceService {
   readonly #isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
-  readonly #defaultDataLayerName = signal<string | undefined>(undefined); //todo
-  readonly #dataLayersNames = signal<string[]>([]); //todo
+
   readonly #maxDataLength = 8192;
+
+  readonly defaultDataLayerName = 'dataLayer';
+  readonly defaultDataLayer = signal<string | null>(null);
+  readonly initializedDataLayers = signal<string[]>([]);
 
   /**
    * Базовый метод для отправки данных электронной коммерции
@@ -70,8 +73,15 @@ export class YMEcommerceService {
     promotions: EcommercePromotion[] = [],
     currencyCode: string = 'RUB',
   ): void {
+    if (!this.defaultDataLayer()) {
+      console.warn(
+        `${libName}: В провайдере счетчика по умолчанию не определено свойство ecommerce.`,
+      );
+      return;
+    }
+
     this.executeWithDataLayer(
-      this.#defaultDataLayerName()!,
+      this.defaultDataLayer()!,
       actionType,
       products,
       actionField,
@@ -131,15 +141,12 @@ export class YMEcommerceService {
    * @param currencyCode - Код валюты (ISO 4217)
    *
    * @example
-   * this.executeProductImpressions([
+   * this.impressions([
    *   { id: 'P15432', name: 'Футболка', price: 477.60, position: 1 },
    *   { id: 'P15435', name: 'Футболка', price: 500.60, position: 2 }
    * ]);
    */
-  public executeProductImpressions(
-    products: EcommerceProduct[],
-    currencyCode: string = 'RUB',
-  ): void {
+  public impressions(products: EcommerceProduct[], currencyCode: string = 'RUB'): void {
     this.execute('impressions', products, undefined, [], currencyCode);
   }
 
@@ -150,7 +157,7 @@ export class YMEcommerceService {
    * @param products - Массив товаров в списке с позициями
    * @param currencyCode - Код валюты (ISO 4217)
    */
-  public executeProductImpressionsWithDataLayer(
+  public impressionsWithDataLayer(
     dataLayerName: string,
     products: EcommerceProduct[],
     currencyCode: string = 'RUB',
@@ -167,7 +174,7 @@ export class YMEcommerceService {
    * @param product - Данные товара по которому произведен клик
    * @param currencyCode - Код валюты (ISO 4217)
    */
-  public executeProductClick(product: EcommerceProduct, currencyCode: string = 'RUB'): void {
+  public click(product: EcommerceProduct, currencyCode: string = 'RUB'): void {
     this.execute('click', [product], undefined, [], currencyCode);
   }
 
@@ -178,7 +185,7 @@ export class YMEcommerceService {
    * @param product - Данные товара по которому произведен клик
    * @param currencyCode - Код валюты (ISO 4217)
    */
-  public executeProductClickWithDataLayer(
+  public clickWithDataLayer(
     dataLayerName: string,
     product: EcommerceProduct,
     currencyCode: string = 'RUB',
@@ -195,7 +202,7 @@ export class YMEcommerceService {
    * @param product - Данные просматриваемого товара
    * @param currencyCode - Код валюты (ISO 4217)
    */
-  public executeProductView(product: EcommerceProduct, currencyCode: string = 'RUB'): void {
+  public detail(product: EcommerceProduct, currencyCode: string = 'RUB'): void {
     this.execute('detail', [product], undefined, [], currencyCode);
   }
 
@@ -206,7 +213,7 @@ export class YMEcommerceService {
    * @param product - Данные просматриваемого товара
    * @param currencyCode - Код валюты (ISO 4217)
    */
-  public executeProductViewWithDataLayer(
+  public detailWithDataLayer(
     dataLayerName: string,
     product: EcommerceProduct,
     currencyCode: string = 'RUB',
@@ -223,7 +230,7 @@ export class YMEcommerceService {
    * @param product - Данные добавляемого товара
    * @param currencyCode - Код валюты (ISO 4217)
    */
-  public executeAddToCart(product: EcommerceProduct, currencyCode: string = 'RUB'): void {
+  public add(product: EcommerceProduct, currencyCode: string = 'RUB'): void {
     this.execute('add', [product], undefined, [], currencyCode);
   }
 
@@ -234,7 +241,7 @@ export class YMEcommerceService {
    * @param product - Данные добавляемого товара
    * @param currencyCode - Код валюты (ISO 4217)
    */
-  public executeAddToCartWithDataLayer(
+  public addWithDataLayer(
     dataLayerName: string,
     product: EcommerceProduct,
     currencyCode: string = 'RUB',
@@ -251,7 +258,7 @@ export class YMEcommerceService {
    * @param product - Данные удаляемого товара
    * @param currencyCode - Код валюты (ISO 4217)
    */
-  public executeRemoveFromCart(product: EcommerceProduct, currencyCode: string = 'RUB'): void {
+  public remove(product: EcommerceProduct, currencyCode: string = 'RUB'): void {
     this.execute('remove', [product], undefined, [], currencyCode);
   }
 
@@ -262,7 +269,7 @@ export class YMEcommerceService {
    * @param product - Данные удаляемого товара
    * @param currencyCode - Код валюты (ISO 4217)
    */
-  public executeRemoveFromCartWithDataLayer(
+  public removeWithDataLayer(
     dataLayerName: string,
     product: EcommerceProduct,
     currencyCode: string = 'RUB',
@@ -280,7 +287,7 @@ export class YMEcommerceService {
    * @param products - Список товаров в заказе
    * @param currencyCode - Код валюты (ISO 4217)
    */
-  public executePurchase(
+  public purchase(
     actionField: EcommerceActionField,
     products: EcommerceProduct[],
     currencyCode: string = 'RUB',
@@ -296,7 +303,7 @@ export class YMEcommerceService {
    * @param products - Список товаров в заказе
    * @param currencyCode - Код валюты (ISO 4217)
    */
-  public executePurchaseWithDataLayer(
+  public purchaseWithDataLayer(
     dataLayerName: string,
     actionField: EcommerceActionField,
     products: EcommerceProduct[],
@@ -313,7 +320,7 @@ export class YMEcommerceService {
    *
    * @param promotions - Данные о просмотренных промо-кампаниях
    */
-  public executePromoView(promotions: EcommercePromotion[]): void {
+  public promoView(promotions: EcommercePromotion[]): void {
     this.execute('promoView', [], undefined, promotions);
   }
 
@@ -323,10 +330,7 @@ export class YMEcommerceService {
    * @param dataLayerName - Имя dataLayer для отправки данных
    * @param promotions - Данные о просмотренных промо-кампаниях
    */
-  public executePromoViewWithDataLayer(
-    dataLayerName: string,
-    promotions: EcommercePromotion[],
-  ): void {
+  public promoViewWithDataLayer(dataLayerName: string, promotions: EcommercePromotion[]): void {
     this.executeWithDataLayer(dataLayerName, 'promoView', [], undefined, promotions);
   }
 
@@ -338,7 +342,7 @@ export class YMEcommerceService {
    *
    * @param promotion - Данные о промо-кампании по которой произведен клик
    */
-  public executePromoClick(promotion: EcommercePromotion): void {
+  public promoClick(promotion: EcommercePromotion): void {
     this.execute('promoClick', [], undefined, [promotion]);
   }
 
@@ -348,10 +352,7 @@ export class YMEcommerceService {
    * @param dataLayerName - Имя dataLayer для отправки данных
    * @param promotion - Данные о промо-кампании по которой произведен клик
    */
-  public executePromoClickWithDataLayer(
-    dataLayerName: string,
-    promotion: EcommercePromotion,
-  ): void {
+  public promoClickWithDataLayer(dataLayerName: string, promotion: EcommercePromotion): void {
     this.executeWithDataLayer(dataLayerName, 'promoClick', [], undefined, [promotion]);
   }
 
@@ -423,9 +424,11 @@ export class YMEcommerceService {
    */
   private validateDataLayerAvailability(dataLayer: string): void {
     if (!(window as any)[dataLayer])
-      throw new Error(`DataLayer "${dataLayer}" не найден. Убедитесь, что он инициализирован.`);
+      throw new Error(
+        `${libName}: DataLayer "${dataLayer}" не найден. Убедитесь, что он инициализирован.`,
+      );
 
     if (!Array.isArray((window as any)[dataLayer]))
-      throw new Error(`DataLayer "${dataLayer}" должен быть массивом`);
+      throw new Error(`${libName}: DataLayer "${dataLayer}" должен быть массивом`);
   }
 }

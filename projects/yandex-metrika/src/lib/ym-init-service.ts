@@ -2,22 +2,23 @@ import { DOCUMENT, inject, Injectable, isDevMode, PLATFORM_ID, signal } from '@a
 import { isPlatformBrowser } from '@angular/common';
 import { YMConfig } from './ym-config-interface';
 import { libName } from './ym-lib-name';
+import { YMEcommerceService } from './ym-ecommerce/ym-ecommerce-service';
 
 @Injectable({ providedIn: 'root' })
 export class YMInitService {
   readonly #document = inject(DOCUMENT);
+  readonly #ecommerce = inject(YMEcommerceService);
+
   readonly #isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   readonly #defaultScriptUrl = 'https://mc.yandex.ru/metrika/tag.js';
   readonly #initialized = signal(false);
   readonly #loadedScripts = signal<number[]>([]);
 
-  readonly #defaultDataLayerName = 'dataLayer';
-  readonly #dataLayersNames = signal<string[]>([]);
-
-  public initialize(config: YMConfig): void {
+  public initialize(config: YMConfig, isDefault = false): void {
     if (!this.canInit(config)) return;
-    if (config.options?.ecommerce) this.initializeEcommerceDataLayer(config.options.ecommerce);
+    if (config.options?.ecommerce)
+      this.initializeEcommerceDataLayer(config.options.ecommerce, isDefault);
     if (!this.#initialized()) {
       this.loadScript(config);
       this.#initialized.set(true);
@@ -53,11 +54,14 @@ export class YMInitService {
     this.#document.head.appendChild(script);
   }
 
-  private initializeEcommerceDataLayer(ecommerce: boolean | string | any[]): void {
+  private initializeEcommerceDataLayer(
+    ecommerce: boolean | string | any[],
+    isDefault = false,
+  ): void {
     let dataLayerName: string;
 
     if (ecommerce === true) {
-      dataLayerName = this.#defaultDataLayerName;
+      dataLayerName = this.#ecommerce.defaultDataLayerName;
     } else if (typeof ecommerce === 'string' && ecommerce.trim().length > 0) {
       dataLayerName = ecommerce.trim();
     } else if (Array.isArray(ecommerce)) {
@@ -68,7 +72,7 @@ export class YMInitService {
       return;
     }
 
-    if (this.#dataLayersNames().includes(dataLayerName)) {
+    if (this.#ecommerce.initializedDataLayers().includes(dataLayerName)) {
       console.warn(`${libName}: DataLayer "${dataLayerName}" для ecommerce уже инициализирован`);
       return;
     }
@@ -80,7 +84,8 @@ export class YMInitService {
       console.log(`${libName}: DataLayer "${dataLayerName}" уже существует`);
     }
 
-    this.#dataLayersNames.update((layers) => [...layers, dataLayerName]);
+    this.#ecommerce.defaultDataLayer.set(dataLayerName);
+    this.#ecommerce.initializedDataLayers.update((layers) => [...layers, dataLayerName]);
   }
 
   private canInit(config: YMConfig): boolean {

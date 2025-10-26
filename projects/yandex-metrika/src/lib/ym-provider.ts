@@ -94,7 +94,7 @@ export function provideYandexMetrika(config: YMConfig | YMConfig[]): Environment
       const metrika = inject(YMInitService);
       const configs = inject(YM_CONFIG_TOKEN);
 
-      configs.forEach((config) => metrika.initialize(config));
+      configs.forEach((config) => metrika.initialize(config, config.id === defaultCounter?.id));
 
       return Promise.resolve();
     }),
