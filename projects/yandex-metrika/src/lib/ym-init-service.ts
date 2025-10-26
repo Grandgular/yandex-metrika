@@ -84,7 +84,7 @@ export class YMInitService {
       console.log(`${libName}: DataLayer "${dataLayerName}" уже существует`);
     }
 
-    this.#ecommerce.defaultDataLayer.set(dataLayerName);
+    if (isDefault) this.#ecommerce.defaultDataLayer.set(dataLayerName);
     this.#ecommerce.initializedDataLayers.update((layers) => [...layers, dataLayerName]);
   }
 
