@@ -5,6 +5,7 @@ import { YMConfig } from './ym-config-interface';
 import { libName } from './ym-lib-name';
 import { YMMethod } from './ym-method-enum';
 import { KNOWN_METHODS, KnownMethodArgs, YMMethodArgs, YMMethodType } from './ym-method-args-type';
+import { YMEcommerceService } from './ym-ecommerce/ym-ecommerce-service';
 
 /**
  * Сервис для типобезопасной работы с Яндекс.Метрикой в Angular приложениях
@@ -88,6 +89,10 @@ export class YMService {
   readonly #configs = inject(YM_CONFIG_TOKEN, { optional: true });
   readonly #defaultConfig = inject(YM_DEFAULT_CONFIG_TOKEN, { optional: true });
   readonly #isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+
+  // ====================== ECOMMERCE СЕРВИС ======================
+
+  public readonly ecommerce = inject(YMEcommerceService);
 
   // ==================== УНИВЕРСАЛЬНЫЕ МЕТОДЫ ====================
 
