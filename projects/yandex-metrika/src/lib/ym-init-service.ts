@@ -1,5 +1,5 @@
-import { DOCUMENT, inject, Injectable, isDevMode, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { inject, Injectable, isDevMode, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser, DOCUMENT } from '@angular/common';
 import { YMConfig } from './ym-config-interface';
 import { libName } from './ym-lib-name';
 
