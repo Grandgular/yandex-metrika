@@ -2,18 +2,45 @@ import { inject, Injectable, isDevMode, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser, DOCUMENT } from '@angular/common';
 import { YMConfig } from './ym-config-interface';
 import { libName } from './ym-lib-name';
+import { YM_CONFIG_TOKEN } from './ym-config-token';
 
 @Injectable({ providedIn: 'root' })
 export class YMInitService {
   readonly #document = inject(DOCUMENT);
   readonly #isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  readonly #configs = inject(YM_CONFIG_TOKEN, { optional: true });
   readonly #defaultScriptUrl = 'https://mc.yandex.ru/metrika/tag.js';
+  readonly #initializedCounterIds = new Set<number>();
+
+  /**
+   * Инициализирует все счётчики из конфигурации {@link provideYandexMetrika}.
+   * Идемпотентен: повторные вызовы для одного и того же `id` игнорируются.
+   *
+   * Используйте при `initialization: 'deferred'` после получения согласия пользователя.
+   */
+  public initializeAll(): void {
+    if (!this.#isBrowser) return;
+
+    const configs = this.#configs;
+    if (!configs?.length) {
+      console.warn(`${libName}: Нет конфигурации счётчиков для initializeAll()`);
+      return;
+    }
+
+    configs.forEach((config) => this.initialize(config));
+  }
 
   public initialize(config: YMConfig): void {
     if (!this.canInit(config)) return;
 
+    if (this.#initializedCounterIds.has(config.id)) return;
+
     this.loadScript(config);
-    this.addNoscriptFallback(config.id);
+    if (config.includeNoscriptFallback !== false) {
+      this.addNoscriptFallback(config.id);
+    }
+
+    this.#initializedCounterIds.add(config.id);
   }
 
   private canInit(config: YMConfig): boolean {
@@ -25,8 +52,10 @@ export class YMInitService {
 
     const script = this.#document.createElement('script');
     script.src = config?.alternativeScriptUrl || this.#defaultScriptUrl;
-    script.async = config.loading === 'async';
-    script.defer = config.loading === 'defer';
+    
+    const loading = config.loading ?? 'async';
+    script.async = loading === 'async';
+    script.defer = loading === 'defer';
 
     (window as any).ym(config.id, 'init', config.options);
 

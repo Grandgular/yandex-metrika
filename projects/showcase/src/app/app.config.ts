@@ -17,15 +17,20 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideClientHydration(withEventReplay()),
     provideHttpClient(withFetch()),
-    provideYandexMetrika({
-      id: 104120889,
-      options: {
-        clickmap: true,
-        trackLinks: true,
-        accurateTrackBounce: true,
-        webvisor: true,
-        ecommerce: 'dataLayer',
+    // Режим deferred для демонстрации отложенной инициализации
+    provideYandexMetrika(
+      {
+        id: 104120889,
+        includeNoscriptFallback: false,
+        options: {
+          clickmap: true,
+          trackLinks: true,
+          accurateTrackBounce: true,
+          webvisor: true,
+          ecommerce: 'dataLayer',
+        },
       },
-    }),
+      { initialization: 'deferred' },
+    ),
   ],
 };

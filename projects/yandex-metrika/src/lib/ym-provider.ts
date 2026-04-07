@@ -9,6 +9,9 @@ import { YM_CONFIG_TOKEN, YM_DEFAULT_CONFIG_TOKEN } from './ym-config-token';
 import { YMInitService } from './ym-init-service';
 import { YMConfig } from './ym-config-interface';
 import { libName } from './ym-lib-name';
+import { YandexMetrikaProviderOptions } from './ym-provider-options';
+
+export type { YandexMetrikaProviderOptions } from './ym-provider-options';
 
 /**
  * Функция для предоставления и настройки Яндекс.Метрики в Angular приложениях.
@@ -43,6 +46,7 @@ import { libName } from './ym-lib-name';
  * @param config - Объект конфигурации YMConfig или массив конфигураций для нескольких счетчиков.
  * При использовании нескольких счетчиков, первый счетчик с `default: true` будет использоваться по умолчанию,
  * в противном случае будет выбран первый доступный счетчик в массиве.
+ * @param options - Опционально: режим инициализации (`deferred` — без автозагрузки до {@link YMInitService.initializeAll}).
  *
  * @returns EnvironmentProviders с настроенными провайдерами для интеграции с Яндекс.Метрикой
  *
@@ -55,8 +59,13 @@ import { libName } from './ym-lib-name';
  *
  * @see YMConfig - Интерфейс конфигурации счетчика
  * @see YMService - Для работы с API после инициализации
+ * @see YandexMetrikaProviderOptions - Режим `deferred` для отложенной загрузки до согласия
  */
-export function provideYandexMetrika(config: YMConfig | YMConfig[]): EnvironmentProviders {
+export function provideYandexMetrika(
+  config: YMConfig | YMConfig[],
+  options?: YandexMetrikaProviderOptions,
+): EnvironmentProviders {
+  const initialization = options?.initialization ?? 'immediate';
   const configs = Array.isArray(config) ? config : [config];
   const isDev = isDevMode();
   const availableConfigs = configs.filter((config) => !config.prodOnly || !isDev);
@@ -90,13 +99,17 @@ export function provideYandexMetrika(config: YMConfig | YMConfig[]): Environment
       provide: YM_DEFAULT_CONFIG_TOKEN,
       useValue: defaultCounter,
     },
-    provideAppInitializer(() => {
-      const metrika = inject(YMInitService);
-      const configs = inject(YM_CONFIG_TOKEN);
+    ...(initialization === 'immediate'
+      ? [
+          provideAppInitializer(() => {
+            const metrika = inject(YMInitService);
+            const configs = inject(YM_CONFIG_TOKEN);
 
-      configs.forEach((config) => metrika.initialize(config));
+            configs.forEach((config) => metrika.initialize(config));
 
-      return Promise.resolve();
-    }),
+            return Promise.resolve();
+          }),
+        ]
+      : []),
   ]);
 }

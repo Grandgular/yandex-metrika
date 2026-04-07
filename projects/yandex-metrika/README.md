@@ -19,7 +19,29 @@
 ✅ Поддержка нескольких счетчиков  
 ✅ Окружение-зависимая инициализация (режим prodOnly)  
 ✅ NoScript фолбэк для пользователей с отключенным JavaScript  
-✅ Простой паттерн провайдеров
+✅ Простой паттерн провайдеров  
+✅ **Отложенная инициализация до согласия (GDPR / 152-ФЗ)** — новое в v1.6.0
+
+---
+
+## Обновления в версии 1.6.0:
+
+**Отложенная инициализация до согласия пользователя** — поддержка GDPR, 152-ФЗ и cookie banners:
+
+```typescript
+provideYandexMetrika(
+  { id: 104120889, includeNoscriptFallback: false },
+  { initialization: 'deferred' }
+);
+
+// После согласия:
+inject(YMInitService).initializeAll();
+```
+
+- `initialization: 'deferred'` — счётчик не загружается при старте приложения
+- `includeNoscriptFallback: false` — не вставлять NoScript-пиксель до согласия
+- Идемпотентность: повторные вызовы `initializeAll()` безопасны
+- Подробнее в разделе [Согласие на cookies](#согласие-на-cookies-gdpr--152-фз)
 
 ---
 
@@ -151,6 +173,55 @@ export class MyComponent {
 
 ---
 
+## Согласие на cookies (GDPR / 152-ФЗ)
+
+Настройка кода не заменяет юридическое оформление политики и баннера согласия: библиотека лишь позволяет **не загружать** счётчик и скрипт Метрики до вашего явного запуска.
+
+### Отложенная инициализация
+
+Передайте второй аргумент с `initialization: 'deferred'`. Счётчики **не** инициализируются при старте приложения; после получения согласия вызовите `initializeAll()` у `YMInitService` (идемпотентно: повторные вызовы для того же счётчика безопасны).
+
+```typescript
+// app.config.ts
+import { provideYandexMetrika, YMInitService } from '@grandgular/yandex-metrika';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideYandexMetrika(
+      {
+        id: 104120889,
+        includeNoscriptFallback: false, // Не вставлять NoScript-пиксель до согласия
+      },
+      { initialization: 'deferred' },
+    ),
+  ],
+};
+```
+
+```typescript
+// После «Принять» в баннере cookies
+import { inject } from '@angular/core';
+import { YMInitService } from '@grandgular/yandex-metrika';
+
+export class CookieBannerComponent {
+  private readonly metrikaInit = inject(YMInitService);
+
+  onAcceptAnalytics(): void {
+    this.metrikaInit.initializeAll();
+  }
+}
+```
+
+Пока `initializeAll()` не вызван, `YMService` не отправляет события (нет инициализированного счётчика в браузере).
+
+### Параметры провайдера (второй аргумент)
+
+| Свойство           | Обязательность | Тип                           | По умолчанию  | Описание |
+| ------------------ | -------------- | ----------------------------- | ------------- | -------- |
+| `initialization`   | Опциональный   | `'immediate' \| 'deferred'`   | `'immediate'` | `immediate` — загрузка при старте; `deferred` — только после `YMInitService.initializeAll()` |
+
+---
+
 ## Опции конфигурации
 
 | Свойство                      | Обязательность | Тип                            | По умолчанию | Описание                                                    |
@@ -161,6 +232,7 @@ export class MyComponent {
 | `loading`                     | `Опциональный` | `'async' \| 'defer' \| 'sync'` | `'async'`    | Стратегия загрузки скрипта                                  |
 | `alternativeScriptUrl`        | `Опциональный` | `string`                       | -            | Альтернативный URL для загрузки скрипта                     |
 | `default`                     | `Опциональный` | `boolean`                      | `false`      | Использовать как счетчик по умолчанию                       |
+| `includeNoscriptFallback`     | `Опциональный` | `boolean`                      | `true`       | Вставлять NoScript с пикселем `mc.yandex.ru/watch/{id}` при инициализации |
 | `options.clickmap`            | `Опциональный` | `boolean`                      | `true`       | Включить карту кликов (heatmap)                             |
 | `options.trackLinks`          | `Опциональный` | `boolean`                      | `true`       | Включить отслеживание переходов по внешним ссылкам          |
 | `options.accurateTrackBounce` | `Опциональный` | `boolean`                      | `true`       | Точный расчет показателя отказов                            |

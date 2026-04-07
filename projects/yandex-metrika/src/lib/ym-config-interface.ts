@@ -22,6 +22,7 @@
  * @property loading - Стратегия загрузки скрипта: 'async' (неблокирующая), 'defer' (после загрузки DOM), или 'sync' (блокирующая). По умолчанию: 'async'
  * @property alternativeScriptUrl - Кастомный URL для загрузки скрипта Яндекс.Метрики. Полезно для кастомных CDN или оптимизаций.
  * @property default - Помечает счетчик как используемый по умолчанию. Если настроено несколько счетчиков, первый default будет использоваться когда счетчик не указан явно.
+ * @property includeNoscriptFallback - Вставлять ли NoScript с пикселем watch/{id} при инициализации
  * @property options - Настройки функций отслеживания Яндекс.Метрики
  */
 export interface YMConfig {
@@ -31,6 +32,14 @@ export interface YMConfig {
   loading?: 'async' | 'defer' | 'sync';
   alternativeScriptUrl?: string;
   default?: boolean;
+
+  /**
+   * Вставить NoScript с пикселем `https://mc.yandex.ru/watch/{id}` при инициализации счётчика.
+   * Отключите при отложенном старте, если не нужен пиксель до согласия пользователя.
+   *
+   * @default true
+   */
+  includeNoscriptFallback?: boolean;
   options?: {
     /**
      * Включить карту кликов (heatmap)
