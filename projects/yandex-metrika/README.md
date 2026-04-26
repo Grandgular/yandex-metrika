@@ -20,7 +20,36 @@
 ✅ Окружение-зависимая инициализация (режим prodOnly)  
 ✅ NoScript фолбэк для пользователей с отключенным JavaScript  
 ✅ Простой паттерн провайдеров  
-✅ **Отложенная инициализация до согласия (GDPR / 152-ФЗ)** — новое в v1.6.0
+✅ **Отложенная инициализация до согласия (GDPR / 152-ФЗ)**  
+✅ **Автоматические virtual pageview при смене маршрута (SPA)** — `provideYandexMetrikaRouter()`
+
+---
+
+## Обновления в версии 1.7.0
+
+**`provideYandexMetrikaRouter()`** — подписка на `Router.events` (`NavigationEnd`) и вызов `hit()` с `urlAfterRedirects` (и при необходимости заголовком страницы). Добавьте **после** `provideYandexMetrika` и `provideRouter`.
+
+```typescript
+import { ApplicationConfig } from '@angular/core';
+import { provideRouter, Routes } from '@angular/router';
+import { provideYandexMetrika, provideYandexMetrikaRouter } from '@grandgular/yandex-metrika';
+
+const routes: Routes = [];
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideRouter(routes),
+    provideYandexMetrika({ id: 123456, options: { trackHash: true } }),
+    provideYandexMetrikaRouter({
+      ignoreInitialNavigation: true, // не дублировать первый просмотр (по умолчанию)
+      includePageTitle: true,        // передавать title в hit (по умолчанию)
+    }),
+  ],
+};
+```
+
+- Совместим с `initialization: 'deferred'`: до `initializeAll()` вызовы `hit` из трекера отработают как no-op.
+- **Peer-зависимости** для этой фичи: `@angular/router`, `@angular/platform-browser` (уже в peer-диапазоне пакета).
 
 ---
 

@@ -19,7 +19,21 @@
 ✅ Поддержка нескольких счетчиков  
 ✅ Окружение-зависимая инициализация (режим prodOnly)  
 ✅ NoScript фолбэк для пользователей с отключенным JavaScript  
-✅ Простой паттерн провайдеров
+✅ Простой паттерн провайдеров  
+✅ Отложенная инициализация до согласия (GDPR / 152-ФЗ), `initialization: 'deferred'`  
+✅ Автоматические virtual pageview при навигации SPA — `provideYandexMetrikaRouter()`
+
+---
+
+## Обновления в версии 1.7.0
+
+**`provideYandexMetrikaRouter()`** — `NavigationEnd` → `hit(urlAfterRedirects)`; опции `ignoreInitialNavigation` (по умолчанию `true`), `includePageTitle` (по умолчанию `true`). Подключайте **после** `provideYandexMetrika` и `provideRouter`. Совместимо с `initialization: 'deferred'`. Требуются peer-зависимости `@angular/router` и `@angular/platform-browser`. Развёрнутая инструкция: [projects/yandex-metrika/README.md](projects/yandex-metrika/README.md).
+
+---
+
+## Обновления в версии 1.6.0
+
+**Отложенная инициализация** — второй аргумент `provideYandexMetrika(config, { initialization: 'deferred' })` и `YMInitService.initializeAll()` после согласия. См. `includeNoscriptFallback: false` для баннера.
 
 ---
 

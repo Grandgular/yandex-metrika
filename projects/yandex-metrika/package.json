@@ -1,9 +1,11 @@
 {
   "name": "@grandgular/yandex-metrika",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "peerDependencies": {
-    "@angular/common": "^19.0.0 || ^20.0.0",
-    "@angular/core": "^19.0.0 || ^20.0.0"
+    "@angular/common": "^19.0.0 || ^20.0.0 || ^21.0.0",
+    "@angular/core": "^19.0.0 || ^20.0.0 || ^21.0.0",
+    "@angular/platform-browser": "^19.0.0 || ^20.0.0 || ^21.0.0",
+    "@angular/router": "^19.0.0 || ^20.0.0 || ^21.0.0"
   },
   "dependencies": {
     "tslib": "^2.3.0"

@@ -24,7 +24,8 @@
         "test": {
           "builder": "@angular/build:karma",
           "options": {
-            "tsConfig": "projects/yandex-metrika/tsconfig.spec.json"
+            "tsConfig": "projects/yandex-metrika/tsconfig.spec.json",
+            "polyfills": ["zone.js", "zone.js/testing"]
           }
         }
       }
