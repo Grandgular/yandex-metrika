@@ -7,8 +7,8 @@ import { provideRouter } from '@angular/router';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { routes } from './app.routes';
-// import { provideYandexMetrika } from '@grandgular/yandex-metrika';
-import { provideYandexMetrika } from '../../../yandex-metrika/src/lib/ym-provider';
+// import { provideYandexMetrika, provideYandexMetrikaRouter } from '@grandgular/yandex-metrika';
+import { provideYandexMetrika, provideYandexMetrikaRouter } from '../../../yandex-metrika/src/public-api';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -32,5 +32,6 @@ export const appConfig: ApplicationConfig = {
       },
       { initialization: 'deferred' },
     ),
+    provideYandexMetrikaRouter(),
   ],
 };
